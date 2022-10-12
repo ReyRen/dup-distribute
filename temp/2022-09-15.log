@@ -1,0 +1,15 @@
+[INFO] [2022-09-15 15:52:16] Hello world!
+[INFO] [2022-09-15 16:03:28] Hello world!
+[DEBUG] [2022-09-15 16:06:44] Hello world debug!
+[INFO] [2022-09-15 16:11:26] Hello world!
+[DEBUG] [2022-09-15 16:11:26] H.e.l.l.o W.o.r.l.d!
+[WARN] [2022-09-15 16:11:26] H e l l o W o r l d!
+[ERROR] [2022-09-15 16:11:26] Hallo World!
+[INFO] [2022-09-15 16:29:54] Hello world!
+[DEBUG] [2022-09-15 16:29:54] H.e.l.l.o W.o.r.l.d!
+[WARN] [2022-09-15 16:29:54] H e l l o W o r l d!
+[ERROR] [2022-09-15 16:29:54] Hallo World! 1 2
+[INFO] [2022-09-15 16:30:40] Hello world!
+[DEBUG] [2022-09-15 16:30:40] H.e.l.l.o W.o.r.l.d!
+[WARN] [2022-09-15 16:30:40] H e l l o W o r l d!
+[ERROR] [2022-09-15 16:30:40] Hallo World! 1

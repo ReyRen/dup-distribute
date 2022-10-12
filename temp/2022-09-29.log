@@ -1,0 +1,27 @@
+[INFO] [2022-09-29 20:15:29] 39 Start server
+[DEBUG] [2022-09-29 20:15:29] 42 parse config file to tcp_info
+[INFO] [2022-09-29 20:15:29] 21 client number is :2
+[DEBUG] [2022-09-29 20:15:29] 32 master address is :"172.19.29.80"
+[DEBUG] [2022-09-29 20:15:29] 33 master port is :"3"
+[DEBUG] [2022-09-29 20:15:29] 58 client1 address is :"192.168.1.1"
+[DEBUG] [2022-09-29 20:15:29] 59 client1 port is :"1111"
+[DEBUG] [2022-09-29 20:15:29] 58 client2 address is :"192.167.2.3"
+[DEBUG] [2022-09-29 20:15:29] 59 client2 port is :"2222"
+[INFO] [2022-09-29 20:18:42] 39 Start server
+[DEBUG] [2022-09-29 20:18:42] 42 parse config file to tcp_info
+[INFO] [2022-09-29 20:18:42] 21 client number is :2
+[DEBUG] [2022-09-29 20:18:42] 32 master address is :"172.19.29.80"
+[DEBUG] [2022-09-29 20:18:42] 33 master port is :"3"
+[DEBUG] [2022-09-29 20:18:42] 58 client1 address is :"192.168.1.1"
+[DEBUG] [2022-09-29 20:18:42] 59 client1 port is :"1111"
+[DEBUG] [2022-09-29 20:18:42] 58 client2 address is :"192.167.2.3"
+[DEBUG] [2022-09-29 20:18:42] 59 client2 port is :"2222"
+[INFO] [2022-09-29 20:27:47] 39 Start server
+[DEBUG] [2022-09-29 20:27:47] 42 parse config file to tcp_info
+[INFO] [2022-09-29 20:27:47] 21 client number is :2
+[DEBUG] [2022-09-29 20:27:47] 32 master address is :"172.19.29.80"
+[DEBUG] [2022-09-29 20:27:47] 33 master port is :"3"
+[DEBUG] [2022-09-29 20:27:47] 58 client1 address is :"192.168.1.1"
+[DEBUG] [2022-09-29 20:27:47] 59 client1 port is :"1111"
+[DEBUG] [2022-09-29 20:27:47] 58 client2 address is :"192.167.2.3"
+[DEBUG] [2022-09-29 20:27:47] 59 client2 port is :"2222"

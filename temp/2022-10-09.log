@@ -1,0 +1,242 @@
+[INFO] [2022-10-09 10:51:05] 9 *********Start Server*********
+[INFO] [2022-10-09 10:51:05] 11 parse config file to tcp_info
+[INFO] [2022-10-09 10:51:05] 220 client number is :2
+[DEBUG] [2022-10-09 10:51:05] 231 master address is :127.0.0.1
+[DEBUG] [2022-10-09 10:51:05] 232 master port is :60001
+[DEBUG] [2022-10-09 10:51:05] 233 master connected clients number are :2
+[DEBUG] [2022-10-09 10:51:05] 257 client1 address is :192.168.1.1
+[DEBUG] [2022-10-09 10:51:05] 258 client1 port is :111
+[DEBUG] [2022-10-09 10:51:05] 257 client2 address is :192.167.2.3
+[DEBUG] [2022-10-09 10:51:05] 258 client2 port is :222
+[INFO] [2022-10-09 10:51:05] 15 create tcp connection as server role
+[DEBUG] [2022-10-09 10:51:05] 23 master socket created
+[DEBUG] [2022-10-09 10:51:05] 36 master socket bind
+[DEBUG] [2022-10-09 10:51:05] 44 master socket listening
+[DEBUG] [2022-10-09 10:51:05] 46 master-client socket creating
+[INFO] [2022-10-09 10:51:45] 9 *********Start Server*********
+[INFO] [2022-10-09 10:51:45] 11 parse config file to tcp_info
+[INFO] [2022-10-09 10:51:45] 220 client number is :2
+[DEBUG] [2022-10-09 10:51:45] 231 master address is :127.0.0.1
+[DEBUG] [2022-10-09 10:51:45] 232 master port is :60001
+[DEBUG] [2022-10-09 10:51:45] 233 master connected clients number are :2
+[DEBUG] [2022-10-09 10:51:45] 257 client1 address is :192.168.1.1
+[DEBUG] [2022-10-09 10:51:45] 258 client1 port is :111
+[DEBUG] [2022-10-09 10:51:45] 257 client2 address is :192.167.2.3
+[DEBUG] [2022-10-09 10:51:45] 258 client2 port is :222
+[INFO] [2022-10-09 10:51:45] 15 create tcp connection as server role
+[DEBUG] [2022-10-09 10:51:45] 23 master socket created
+[DEBUG] [2022-10-09 10:51:45] 36 master socket bind
+[DEBUG] [2022-10-09 10:51:45] 44 master socket listening
+[DEBUG] [2022-10-09 10:51:45] 46 master-client socket creating
+[INFO] [2022-10-09 15:54:31] 9 *********Start Server*********
+[INFO] [2022-10-09 15:54:31] 11 parse config file to tcp_info
+[INFO] [2022-10-09 15:54:31] 220 client number is :2
+[DEBUG] [2022-10-09 15:54:31] 231 master address is :127.0.0.1
+[DEBUG] [2022-10-09 15:54:31] 232 master port is :60001
+[DEBUG] [2022-10-09 15:54:31] 233 master connected clients number are :2
+[DEBUG] [2022-10-09 15:54:31] 257 client1 address is :127.0.0.1
+[DEBUG] [2022-10-09 15:54:31] 258 client1 port is :60002
+[DEBUG] [2022-10-09 15:54:31] 257 client2 address is :127.0.0.1
+[DEBUG] [2022-10-09 15:54:31] 258 client2 port is :60003
+[INFO] [2022-10-09 15:54:31] 16 create tcp connection as server role
+[DEBUG] [2022-10-09 15:54:31] 23 master socket created
+[DEBUG] [2022-10-09 15:54:31] 36 master socket bind
+[DEBUG] [2022-10-09 15:54:31] 44 master socket listening
+[DEBUG] [2022-10-09 15:54:31] 46 master-client socket creating
+[DEBUG] [2022-10-09 15:54:31] 53 master-client socket created :127.0.0.1
+[DEBUG] [2022-10-09 15:54:31] 53 master-client socket created :127.0.0.1
+[INFO] [2022-10-09 15:55:05] 84 master connection ok
+[DEBUG] [2022-10-09 15:55:05] 88 master accept fd get: 6
+[INFO] [2022-10-09 15:55:05] 90 msater cport=45910 master caddr=127.0.0.1
+[DEBUG] [2022-10-09 15:55:05] 104 master_client receive process created
+[INFO] [2022-10-09 15:55:11] 162 master received message :sd
+[ERROR] [2022-10-09 15:55:11] 195 send failed :127.0.0.1:60003
+[ERROR] [2022-10-09 15:55:11] 195 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 15:55:15] 162 master received message :asd
+[ERROR] [2022-10-09 15:55:15] 195 send failed :127.0.0.1:60003
+[ERROR] [2022-10-09 15:55:15] 195 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 15:55:21] 162 master received message :asd
+[ERROR] [2022-10-09 15:55:21] 195 send failed :127.0.0.1:60003
+[ERROR] [2022-10-09 15:55:21] 195 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 15:56:00] 162 master received message :qqqq
+[ERROR] [2022-10-09 15:56:00] 195 send failed :127.0.0.1:60003
+[ERROR] [2022-10-09 15:56:00] 195 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 15:56:13] 183 receive done
+[ERROR] [2022-10-09 15:56:17] 67 master socket fd already occupied by :6
+[ERROR] [2022-10-09 15:56:17] 74 master only support one sender to server, close connection
+[INFO] [2022-10-09 15:56:29] 84 master connection ok
+[DEBUG] [2022-10-09 15:56:29] 88 master accept fd get: 6
+[INFO] [2022-10-09 15:56:29] 90 msater cport=48010 master caddr=127.0.0.1
+[DEBUG] [2022-10-09 15:56:29] 104 master_client receive process created
+[INFO] [2022-10-09 15:56:41] 162 master received message :sd
+[ERROR] [2022-10-09 15:56:41] 195 send failed :127.0.0.1:60003
+[ERROR] [2022-10-09 15:56:41] 195 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 15:56:45] 162 master received message :asdsad
+[ERROR] [2022-10-09 15:56:45] 195 send failed :127.0.0.1:60003
+[ERROR] [2022-10-09 15:56:45] 195 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 19:05:00] 183 receive done
+[INFO] [2022-10-09 19:05:48] 9 *********Start Server*********
+[INFO] [2022-10-09 19:05:48] 11 parse config file to tcp_info
+[INFO] [2022-10-09 19:05:48] 220 client number is :2
+[DEBUG] [2022-10-09 19:05:48] 231 master address is :127.0.0.1
+[DEBUG] [2022-10-09 19:05:48] 232 master port is :60001
+[DEBUG] [2022-10-09 19:05:48] 233 master connected clients number are :2
+[DEBUG] [2022-10-09 19:05:48] 257 client1 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:05:48] 258 client1 port is :60002
+[DEBUG] [2022-10-09 19:05:48] 257 client2 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:05:48] 258 client2 port is :60003
+[INFO] [2022-10-09 19:05:48] 16 create tcp connection as server role
+[DEBUG] [2022-10-09 19:05:48] 23 master socket created
+[DEBUG] [2022-10-09 19:05:48] 36 master socket bind
+[DEBUG] [2022-10-09 19:05:48] 44 master socket listening
+[DEBUG] [2022-10-09 19:05:48] 46 master-client socket creating
+[DEBUG] [2022-10-09 19:05:48] 53 master-client socket created :127.0.0.1:60002
+[DEBUG] [2022-10-09 19:05:48] 53 master-client socket created :127.0.0.1:60003
+[INFO] [2022-10-09 19:10:14] 84 master connection ok
+[DEBUG] [2022-10-09 19:10:14] 88 master accept fd get: 6
+[INFO] [2022-10-09 19:10:14] 90 msater cport=39428 master caddr=127.0.0.1
+[DEBUG] [2022-10-09 19:10:14] 104 master_client receive process created
+[INFO] [2022-10-09 19:12:35] 162 master received message :sd
+[ERROR] [2022-10-09 19:12:35] 195 send failed :127.0.0.1:60003
+[ERROR] [2022-10-09 19:12:35] 195 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 19:14:36] 183 receive done
+[INFO] [2022-10-09 19:15:10] 9 *********Start Server*********
+[INFO] [2022-10-09 19:15:10] 11 parse config file to tcp_info
+[INFO] [2022-10-09 19:15:10] 221 client number is :2
+[DEBUG] [2022-10-09 19:15:10] 232 master address is :127.0.0.1
+[DEBUG] [2022-10-09 19:15:10] 233 master port is :60001
+[DEBUG] [2022-10-09 19:15:10] 234 master connected clients number are :2
+[DEBUG] [2022-10-09 19:15:10] 258 client1 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:15:10] 259 client1 port is :60002
+[DEBUG] [2022-10-09 19:15:10] 258 client2 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:15:10] 259 client2 port is :60003
+[INFO] [2022-10-09 19:15:10] 16 create tcp connection as server role
+[DEBUG] [2022-10-09 19:15:10] 23 master socket created
+[DEBUG] [2022-10-09 19:15:10] 36 master socket bind
+[DEBUG] [2022-10-09 19:15:10] 44 master socket listening
+[DEBUG] [2022-10-09 19:15:10] 46 master-client socket creating
+[DEBUG] [2022-10-09 19:15:10] 53 master-client socket created :127.0.0.1:60002
+[DEBUG] [2022-10-09 19:15:10] 53 master-client socket created :127.0.0.1:60003
+[INFO] [2022-10-09 19:15:19] 84 master connection ok
+[DEBUG] [2022-10-09 19:15:19] 88 master accept fd get: 6
+[INFO] [2022-10-09 19:15:19] 90 msater cport=47548 master caddr=127.0.0.1
+[DEBUG] [2022-10-09 19:15:19] 104 master_client receive process created
+[INFO] [2022-10-09 19:15:21] 162 master received message :sd
+[ERROR] [2022-10-09 19:15:21] 196 send failed :127.0.0.1:60003
+[ERROR] [2022-10-09 19:15:21] 196 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 19:15:24] 184 receive done
+[INFO] [2022-10-09 19:19:57] 9 *********Start Server*********
+[INFO] [2022-10-09 19:19:57] 11 parse config file to tcp_info
+[INFO] [2022-10-09 19:19:57] 223 client number is :2
+[DEBUG] [2022-10-09 19:19:57] 234 master address is :127.0.0.1
+[DEBUG] [2022-10-09 19:19:57] 235 master port is :60001
+[DEBUG] [2022-10-09 19:19:57] 236 master connected clients number are :2
+[DEBUG] [2022-10-09 19:19:57] 260 client1 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:19:57] 261 client1 port is :60002
+[DEBUG] [2022-10-09 19:19:57] 260 client2 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:19:57] 261 client2 port is :60003
+[INFO] [2022-10-09 19:19:57] 16 create tcp connection as server role
+[DEBUG] [2022-10-09 19:19:57] 23 master socket created
+[DEBUG] [2022-10-09 19:19:57] 36 master socket bind
+[DEBUG] [2022-10-09 19:19:57] 44 master socket listening
+[DEBUG] [2022-10-09 19:19:57] 46 master-client socket creating
+[DEBUG] [2022-10-09 19:19:57] 53 master-client socket created :127.0.0.1:60002
+[DEBUG] [2022-10-09 19:19:57] 53 master-client socket created :127.0.0.1:60003
+[INFO] [2022-10-09 19:20:01] 84 master connection ok
+[DEBUG] [2022-10-09 19:20:01] 88 master accept fd get: 6
+[INFO] [2022-10-09 19:20:01] 90 msater cport=51320 master caddr=127.0.0.1
+[DEBUG] [2022-10-09 19:20:01] 104 master_client receive process created
+[INFO] [2022-10-09 19:20:06] 162 master received message :sd
+[DEBUG] [2022-10-09 19:20:06] 194 master-client thread created :1
+[ERROR] [2022-10-09 19:20:06] 198 send failed :127.0.0.1:60002
+[DEBUG] [2022-10-09 19:20:06] 194 master-client thread created :2
+[ERROR] [2022-10-09 19:20:06] 198 send failed :127.0.0.1:60003
+[INFO] [2022-10-09 19:21:11] 184 receive done
+[INFO] [2022-10-09 19:21:30] 9 *********Start Server*********
+[INFO] [2022-10-09 19:21:30] 11 parse config file to tcp_info
+[INFO] [2022-10-09 19:21:30] 223 client number is :2
+[DEBUG] [2022-10-09 19:21:30] 234 master address is :127.0.0.1
+[DEBUG] [2022-10-09 19:21:30] 235 master port is :60001
+[DEBUG] [2022-10-09 19:21:30] 236 master connected clients number are :2
+[DEBUG] [2022-10-09 19:21:30] 260 client1 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:21:30] 261 client1 port is :60002
+[DEBUG] [2022-10-09 19:21:30] 260 client2 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:21:30] 261 client2 port is :60003
+[INFO] [2022-10-09 19:21:30] 16 create tcp connection as server role
+[DEBUG] [2022-10-09 19:21:30] 23 master socket created
+[DEBUG] [2022-10-09 19:21:30] 36 master socket bind
+[DEBUG] [2022-10-09 19:21:30] 44 master socket listening
+[DEBUG] [2022-10-09 19:21:30] 46 master-client socket creating
+[DEBUG] [2022-10-09 19:21:30] 53 master-client socket created :127.0.0.1:60002
+[DEBUG] [2022-10-09 19:21:30] 53 master-client socket created :127.0.0.1:60003
+[INFO] [2022-10-09 19:21:36] 84 master connection ok
+[DEBUG] [2022-10-09 19:21:36] 88 master accept fd get: 6
+[INFO] [2022-10-09 19:21:36] 90 msater cport=42134 master caddr=127.0.0.1
+[DEBUG] [2022-10-09 19:21:36] 104 master_client receive process created
+[INFO] [2022-10-09 19:21:37] 162 master received message :sd
+[DEBUG] [2022-10-09 19:21:37] 194 master-client thread created :1
+[ERROR] [2022-10-09 19:21:37] 198 send failed Socket operation on non-socket :127.0.0.1:60002
+[DEBUG] [2022-10-09 19:21:37] 194 master-client thread created :2
+[ERROR] [2022-10-09 19:21:37] 198 send failed Socket operation on non-socket :127.0.0.1:60003
+[INFO] [2022-10-09 19:28:08] 184 receive done
+[INFO] [2022-10-09 19:28:29] 9 *********Start Server*********
+[INFO] [2022-10-09 19:28:29] 11 parse config file to tcp_info
+[INFO] [2022-10-09 19:28:29] 223 client number is :2
+[DEBUG] [2022-10-09 19:28:29] 234 master address is :127.0.0.1
+[DEBUG] [2022-10-09 19:28:29] 235 master port is :60001
+[DEBUG] [2022-10-09 19:28:29] 236 master connected clients number are :2
+[DEBUG] [2022-10-09 19:28:29] 260 client1 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:28:29] 261 client1 port is :60002
+[DEBUG] [2022-10-09 19:28:29] 260 client2 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:28:29] 261 client2 port is :60003
+[INFO] [2022-10-09 19:28:29] 16 create tcp connection as server role
+[DEBUG] [2022-10-09 19:28:29] 23 master socket created
+[DEBUG] [2022-10-09 19:28:29] 36 master socket bind
+[DEBUG] [2022-10-09 19:28:29] 44 master socket listening
+[DEBUG] [2022-10-09 19:28:29] 46 master-client socket creating
+[DEBUG] [2022-10-09 19:28:29] 53 master-client socket created :127.0.0.1:60002
+[DEBUG] [2022-10-09 19:28:29] 53 master-client socket created :127.0.0.1:60003
+[INFO] [2022-10-09 19:28:32] 84 master connection ok
+[DEBUG] [2022-10-09 19:28:32] 88 master accept fd get: 6
+[INFO] [2022-10-09 19:28:32] 90 msater cport=40860 master caddr=127.0.0.1
+[DEBUG] [2022-10-09 19:28:32] 104 master_client receive process created
+[INFO] [2022-10-09 19:28:35] 162 master received message :asd
+[DEBUG] [2022-10-09 19:28:35] 194 master-client thread created and acceptfd :0
+[ERROR] [2022-10-09 19:28:35] 198 send failed Socket operation on non-socket :127.0.0.1:60003
+[DEBUG] [2022-10-09 19:28:35] 194 master-client thread created and acceptfd :0
+[ERROR] [2022-10-09 19:28:35] 198 send failed Socket operation on non-socket :127.0.0.1:60003
+[INFO] [2022-10-09 19:28:43] 184 receive done
+[INFO] [2022-10-09 19:33:02] 9 *********Start Server*********
+[INFO] [2022-10-09 19:33:02] 11 parse config file to tcp_info
+[INFO] [2022-10-09 19:33:02] 223 client number is :2
+[DEBUG] [2022-10-09 19:33:02] 234 master address is :127.0.0.1
+[DEBUG] [2022-10-09 19:33:02] 235 master port is :60001
+[DEBUG] [2022-10-09 19:33:02] 236 master connected clients number are :2
+[DEBUG] [2022-10-09 19:33:02] 260 client1 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:33:02] 261 client1 port is :60002
+[DEBUG] [2022-10-09 19:33:02] 260 client2 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:33:02] 261 client2 port is :60003
+[INFO] [2022-10-09 19:33:02] 16 create tcp connection as server role
+[DEBUG] [2022-10-09 19:33:02] 23 master socket created
+[DEBUG] [2022-10-09 19:33:02] 36 master socket bind
+[DEBUG] [2022-10-09 19:33:02] 44 master socket listening
+[DEBUG] [2022-10-09 19:33:02] 46 master-client socket creating
+[DEBUG] [2022-10-09 19:33:02] 53 master-client socket created :127.0.0.1:60002
+[DEBUG] [2022-10-09 19:33:02] 53 master-client socket created :127.0.0.1:60003
+[INFO] [2022-10-09 19:34:36] 9 *********Start Server*********
+[INFO] [2022-10-09 19:34:36] 11 parse config file to tcp_info
+[INFO] [2022-10-09 19:34:36] 223 client number is :2
+[DEBUG] [2022-10-09 19:34:36] 234 master address is :127.0.0.1
+[DEBUG] [2022-10-09 19:34:36] 235 master port is :60001
+[DEBUG] [2022-10-09 19:34:36] 236 master connected clients number are :2
+[DEBUG] [2022-10-09 19:34:36] 260 client1 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:34:36] 261 client1 port is :60002
+[DEBUG] [2022-10-09 19:34:36] 260 client2 address is :127.0.0.1
+[DEBUG] [2022-10-09 19:34:36] 261 client2 port is :60003
+[INFO] [2022-10-09 19:34:36] 16 create tcp connection as server role
+[DEBUG] [2022-10-09 19:34:36] 23 master socket created
+[DEBUG] [2022-10-09 19:34:36] 36 master socket bind
+[DEBUG] [2022-10-09 19:34:36] 44 master socket listening
+[DEBUG] [2022-10-09 19:34:36] 46 master-client socket creating
+[DEBUG] [2022-10-09 19:34:36] 53 master-client socket created :127.0.0.1:60002 0
+[DEBUG] [2022-10-09 19:34:36] 53 master-client socket created :127.0.0.1:60003 0
