@@ -40,5 +40,3 @@ void *master_client_send(void *pth_arg);
 //void master_receive(TCP_INFO *tcp_info);
 void master_receive();
 int master_client_socket(int index);
-char lowtocap(char c);
-void AsciiToHex(char *src, uint8_t *dest, int len);

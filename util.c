@@ -168,6 +168,8 @@ void master_receive() {
 		} else if (res == 0) {
 			break;
 		}
+
+/*
 // convert
 		int8_t temp[4096] = {0};
 		int len;
@@ -181,7 +183,7 @@ void master_receive() {
     	for( int i = 0; i < len; i++) {
         	printf("int[%d] is %X,%d\n", i+1,temp[i],temp[i]);
     	}
-		
+*/		
 		strncpy(thread_param.buf, buf, sizeof(buf));
 		pthread_mutex_init(&mute, NULL);
 		LogWrite(DEBUG, "%d %s", __LINE__, "thread mutex init");
@@ -300,48 +302,4 @@ void parseFile_tcpInfo(TCP_INFO **tcp_info) {
 	}
 
 	*tcp_info = ptcp_info;
-}
-
-/* lowercase letters transform to capital letter*/
-char lowtocap(char c) {
-    if ((c >= 'a') && (c <= 'z')) {
-        c = c - 32;
-    }
-    return c;
-}
-
-/* ascii string transform to 16 hex*/
-void AsciiToHex(char *src, uint8_t *dest, int len) {
-    int dh, dl; // 16进制的高4位和低4位
-    char ch, cl; // 字符串的高位和地位
-    int i;
-    if (src == NULL || dest == NULL){
-        printf("src or dest is NULL\n");
-        return;
-    }
-
-    if (len < 1) {
-        printf("length is NULL\n");
-        return;
-    }
-
-    for (i = 0; i < len; i++) {
-        ch = src[2 * i];
-        cl = src[2 * i + 1];
-        dh = lowtocap(ch) - '0';
-        if (dh > 9) {
-            dh = lowtocap(ch) - 'A' + 10;
-        }
-        dl = lowtocap(cl) - '0';
-        if (dl > 9) {
-            dl = lowtocap(cl) - 'A' + 10;
-        }
-        dest[i] = dh * 16 + dl;
-        if (len%2 > 0) { //字符串个数为奇数
-            dest[len / 2] = src[len-1] - '0';
-            if (dest[len / 2] > 9) {
-                dest[len/2] = lowtocap(src[len-1]) - 'A' + 10;
-            }
-        }
-    }
 }

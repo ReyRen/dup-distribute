@@ -53,11 +53,6 @@ int main(int argc, char **argv) {
 			break;
 		}
 		else if (res > 0) {
-            printf("%s:%x\n", "received msg(普通小写16进制)", buf);
-            printf("%s:%X\n", "received msg(普通大写16进制)", buf);
-            printf("%s:%#x\n", "received msg(带0x前缀的小写16进制)", buf);
-            printf("%s:%#X\n", "received msg(带0X前缀的大写16进制)", buf);
-            sizeof(buf);
 		}
     }
     

@@ -20,6 +20,11 @@ typedef struct {
 
 /* 描述线程池相关信息 */
 typedef struct threadpool_t {
+	/*
+	*	条件变量用于某个线程需要在某种条件成立时才去保护它将要操作的临界区，
+	*	这种情况从而避免了线程不断轮询检查该条件是否成立而降低效率的情况。
+	*	在条件满足时，自动退出阻塞，再加锁进行操作。
+	*/
 	pthread_mutex_t lock;               /* 用于锁住本结构体 ，和条件变量一起使用 */    
 	pthread_mutex_t thread_counter;     /* 记录忙状态线程个数的锁 -- busy_thr_num */
 	pthread_cond_t queue_not_full;      /* 当任务队列满时，添加任务的线程阻塞，等待此条件变量 */
@@ -51,7 +56,10 @@ int threadpool_add(threadpool_t *pool, void *(*function)(void *arg), void *arg);
 
 /* 销毁线程池 */
 int threadpool_destroy(threadpool_t *pool);
+int threadpool_free(threadpool_t *pool);
 
-void* threadpool_thread( void *threadpool );//线程池中工作线程要做的事情。
-void *adjust_thread( void *threadpool );    //管理者线程要做的事情。
-int threadpool_free(threadpool_t *pool);    //销毁
+/* 线程池中工作线程要做的事情 */
+void* threadpool_thread( void *threadpool );
+
+/* 管理者线程要做的事情 */
+void *adjust_thread( void *threadpool );
