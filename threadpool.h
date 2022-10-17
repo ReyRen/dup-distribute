@@ -12,6 +12,9 @@
 #define DEFAULT_THREAD_VARY		3		/*每次创建和销毁线程的个数*/
 #define true					1
 #define false					0
+#define MIN_THREAD_NUM			5		//最小线程数
+#define MAX_THREAD_NUM			50		//最大线程数
+#define	QUEUE_MAX_SIZE			50		//队列最大数
 
 typedef struct {
 	void *(*function) (void *);			/* 函数指针，回调函数 */

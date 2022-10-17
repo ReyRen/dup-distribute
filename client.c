@@ -53,6 +53,9 @@ int main(int argc, char **argv) {
 			break;
 		}
 		else if (res > 0) {
+			for (int i = 0; i < res; i++) {
+            	printf("%x \n", buf[i]);
+			}
 		}
     }
     

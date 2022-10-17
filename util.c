@@ -4,7 +4,7 @@
 TCP_INFO *tcp_info; 
 pthread_mutex_t mute;
 
-void tcp_server() {
+void tcp_server(threadpool_t *thp) {
 	int master_socketfd;
 	int res;
 	master_socketfd = socket(AF_INET, SOCK_STREAM, (int)0);
@@ -108,7 +108,7 @@ void tcp_server() {
 		if (pid == 0) {
 			// child process
 			LogWrite(DEBUG, "%d %s", __LINE__, "master_client receive process created");
-			master_receive();
+			master_receive(thp);
 		}
 	}
 }
@@ -145,7 +145,7 @@ int master_client_socket(int index) {
 	return EXIT_SUCCESS_CODE;
 }
 
-void master_receive() {
+void master_receive(threadpool_t *thp) {
 	int master_acceptfd;
 	int client_number = tcp_info[0].clientNum;
 	pthread_t tids[client_number];
@@ -164,7 +164,12 @@ void master_receive() {
 			break;
 		}
 		else if (res > 0) {
-			LogWrite(INFO, "%d %s :%s", __LINE__, "master received message", buf);
+			/*直接读buf会碰到0结束的情况*/
+			LogWrite(INFO, "%d %s:", __LINE__, "master received message");
+			for (int i = 0; i < res; i++) {
+				LogWrite(DEBUG, "%x ", buf[i]);
+			}
+			LogWrite(DEBUG, "\n");
 		} else if (res == 0) {
 			break;
 		}
@@ -184,7 +189,10 @@ void master_receive() {
         	printf("int[%d] is %X,%d\n", i+1,temp[i],temp[i]);
     	}
 */		
-		strncpy(thread_param.buf, buf, sizeof(buf));
+		// strncpy在拷贝的时候，即使长度还没到，但是遇到0也会自动截断
+		//strncpy(thread_param.buf, buf, sizeof(buf));
+		memcpy(thread_param.buf, buf, res);
+		thread_param.bufSize = res;
 		pthread_mutex_init(&mute, NULL);
 		LogWrite(DEBUG, "%d %s", __LINE__, "thread mutex init");
 		for (int i = 0; i < client_number; i++) {
@@ -227,15 +235,16 @@ void *master_client_send(void *pth_arg) {
 	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread locked by client", thread_param->clientIndex);
 	char *buf = thread_param->buf;
 	int index = thread_param->clientIndex;
+	int bufSize = thread_param->bufSize;
 
 	printf("thread_param->clientIndex: %d\n", index);
 	LogWrite(DEBUG, "%d %s :%d", __LINE__, "master-client thread created and acceptfd", tcp_info[index].acceptfd);
 
-	int res = send(tcp_info[index].acceptfd, buf, MAX_BUFFER_SIZE, 0);
+	int res = send(tcp_info[index].acceptfd, buf, bufSize, 0);
 	if (EXIT_FAIL_CODE == res) {
 		LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send failed", strerror(errno), tcp_info[index].address, tcp_info[index].port);
 	} else if(res > 0) {
-		LogWrite(DEBUG, "%d %s %s:%d: %s", __LINE__, "send msgs to", tcp_info[index].address, tcp_info[index].port, buf);
+		LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send msgs to", tcp_info[index].address, tcp_info[index].port);
 	}
 	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread unlocked by client", thread_param->clientIndex);
 	pthread_mutex_unlock(&mute);

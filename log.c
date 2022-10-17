@@ -102,7 +102,9 @@ static void SetTime() {
  * */
 static void PrintfLog(char *format, va_list args) {
     int d;
-	char c, *s;
+	char c, x, *s;
+
+    int no_enter;
 
     while (*format)
     {
@@ -122,6 +124,12 @@ static void PrintfLog(char *format, va_list args) {
 			fprintf(loging.logfile, "%c", c);
 			break;
         }
+        case 'x': {
+            x = va_arg(args, int);
+            fprintf(loging.logfile, "%#2X", x);
+            no_enter = 1;
+			break;
+        }
         default:
             if (*format != '%' && *format != '\n') {
                 fprintf(loging.logfile, "%c", *format); //如果是空格就也输入空格
@@ -130,7 +138,9 @@ static void PrintfLog(char *format, va_list args) {
         }
         format++;
     }
-    fprintf(loging.logfile, "%s", "\n");
+    if (!no_enter) {
+        fprintf(loging.logfile, "%s", "\n");
+    }
 }
 
 static int InitLog(unsigned char loglevel){
