@@ -3,6 +3,7 @@
 
 TCP_INFO *tcp_info; 
 pthread_mutex_t mute;
+extern LOG loging;
 
 void tcp_server(threadpool_t *thp) {
 	int master_socketfd;
@@ -167,13 +168,13 @@ void master_receive(threadpool_t *thp) {
 			/*直接读buf会碰到0结束的情况*/
 			LogWrite(INFO, "%d %s:", __LINE__, "master received message");
 			for (int i = 0; i < res; i++) {
-				LogWrite(DEBUG, "%x ", buf[i]);
+				fprintf(loging.logfile, "%#2X", buf[i]);
 			}
 			LogWrite(DEBUG, "\n");
 		} else if (res == 0) {
 			break;
 		}
-
+ 
 /*
 // convert
 		int8_t temp[4096] = {0};
