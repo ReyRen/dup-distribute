@@ -51,7 +51,7 @@ static unsigned char ReadLogConfig(char *path){
 	//解析配置文件
 	parseFile_ConfigFile(fileData, lines, &info);
 
-    strcpy(value, getInfo_ConfigFile("path", info, lines));
+    strcpy(value, getInfo_ConfigFile("log-path", info, lines));
     GetDate(data);
     strcat(data, ".log");
     strcat(value, "/");
@@ -63,7 +63,7 @@ static unsigned char ReadLogConfig(char *path){
 
     memset(value, 0, sizeof(value));
 
-    strcpy(value, getInfo_ConfigFile("level", info, lines));
+    strcpy(value, getInfo_ConfigFile("log-level", info, lines));
     logsetting.loglevel = GetCode(value);
 
     destroInfo_ConfigFile(info);
