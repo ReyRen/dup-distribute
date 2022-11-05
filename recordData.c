@@ -210,6 +210,7 @@ void GetSequenceDate(char *date) {
 
 int initDataRecord(FILE **file) {
     //创建目录
+    FILE *temp;
     char path[512] = {0x0};
     getcwd(path, sizeof(path));
     strcat(path, CONFIGFILE);
@@ -225,12 +226,13 @@ int initDataRecord(FILE **file) {
         return EXIT_FAIL_CODE;
     }
 
-
     CreateDataFile(path);
-    *file = fopen(path, "rw+");
-    if (*file == NULL) {
+    temp = fopen(path, "rwa+");
+    if (temp == NULL) {
         LogWrite(ERROR, "%d %s :%s", __LINE__, "fopen failed", strerror(errno));
         return EXIT_FAIL_CODE;
     }
+
+    *file = temp;
     return EXIT_SUCCESS_CODE;
 }
