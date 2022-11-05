@@ -1,4 +1,3 @@
-#include "log.h"
 #include "util.h"
 
 TCP_INFO *tcp_info; 

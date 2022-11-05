@@ -13,9 +13,9 @@ all:$(BIN_SERVER) $(BIN_CLIENT) $(BIN_SENDER)
 	$(CC) $(CFLAGS) -c $< -o $@
 dd-server:server.o util.o log.o ConfigFile.o jinzhiConvert.o recordData.o
 	$(CC) $(CFLAGS) $^ -pthread -o $@
-dd-sender:sender.o util.o log.o ConfigFile.o jinzhiConvert.o
+dd-sender:sender.o util.o log.o ConfigFile.o jinzhiConvert.o recordData.o
 	$(CC) $(CFLAGS) $^ -pthread -o $@
-dd-client:client.o util.o log.o ConfigFile.o jinzhiConvert.o
+dd-client:client.o util.o log.o ConfigFile.o jinzhiConvert.o recordData.o
 	$(CC) $(CFLAGS) $^ -pthread -o $@
 clean:
 	rm -f *.o $(BIN_SERVER) $(BIN_CLIENT)
