@@ -156,6 +156,7 @@ void master_receive(threadpool_t *thp) {
 
 	while(1) {
 		int res;
+        FILE *file;
 		bzero(&buf, sizeof(buf));
 		res = recv(master_acceptfd, &buf, sizeof(buf), (int)0);
 
@@ -163,24 +164,26 @@ void master_receive(threadpool_t *thp) {
 			LogWrite(ERROR, "%d %s :%s", __LINE__, "master receive failed", strerror(errno));
 			break;
 		}
-		else if (res > 0) {
+        else if (res > 0) {
 			/*直接读buf会碰到0结束的情况*/
 			LogWrite(INFO, "%d %s:", __LINE__, "master received message");
 
-			/*
-				发送方给的数据就是一个字节的16进制数（0x89这类型），一16进制是4bit，也就是半字节。所以定义接收
-				16进制数，主要得知道接收的每个16进制数的大小。
-				char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
-			*/
+            /*
+                发送方给的数据就是一个字节的16进制数（0x89这类型），一16进制是4bit，也就是半字节。所以定义接收
+                16进制数，主要得知道接收的每个16进制数的大小。
+                char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
+            */
+            initDataRecord(&file);
 
 			for (int i = 0; i < res; i++) {
 				/*
 					记录传输数据
 				*/
-			
-				fprintf(loging.logfile, "%#2X", buf[i]);
+                // 写入到一个文件中
+                fprintf(file,"%#2X", buf[i]);
 			}
-			LogWrite(DEBUG, "\n");
+            fprintf(file,"\n");
+            fclose(file);
 		} else if (res == 0) {
 			break;
 		}

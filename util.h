@@ -11,6 +11,7 @@
 #include <signal.h>
 #include "log.h"
 #include "threadpool.h"
+#include "recordData.h"
 
 #define INFO_LENGTH                 128
 #define BUFFER_SIZE                 512
