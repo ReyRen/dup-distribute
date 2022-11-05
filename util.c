@@ -109,6 +109,7 @@ void tcp_server(threadpool_t *thp) {
 			LogWrite(DEBUG, "%d %s", __LINE__, "master_client receive process created");
 			master_receive(thp);
 		}
+        tcp_info[0].acceptfd = 0;
 	}
 }
 
