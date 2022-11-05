@@ -165,14 +165,18 @@ void master_receive(threadpool_t *thp) {
 		}
         else if (res > 0) {
 			/*直接读buf会碰到0结束的情况*/
-			LogWrite(INFO, "%d %s:", __LINE__, "master received message");
+			LogWrite(INFO, "%d %s", __LINE__, "master received message");
 
             /*
                 发送方给的数据就是一个字节的16进制数（0x89这类型），一16进制是4bit，也就是半字节。所以定义接收
                 16进制数，主要得知道接收的每个16进制数的大小。
                 char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
             */
-            initDataRecord(&file);
+            res = initDataRecord(&file);
+            if (res == EXIT_FAIL_CODE) {
+                LogWrite(ERROR, "%d %s:", __LINE__, "master received message get failed");
+                return;
+            }
 
 			for (int i = 0; i < res; i++) {
 				/*
@@ -186,22 +190,7 @@ void master_receive(threadpool_t *thp) {
 		} else if (res == 0) {
 			break;
 		}
- 
-/*
-// convert
-		int8_t temp[4096] = {0};
-		int len;
-		AsciiToHex(buf, temp, strlen(buf));
-		if (strlen(buf)%2 > 0) {
-        	len = strlen(buf)/2 + 1;
-    	} else {
-        	len = strlen(buf)/2;
-    	}
 
-    	for( int i = 0; i < len; i++) {
-        	printf("int[%d] is %X,%d\n", i+1,temp[i],temp[i]);
-    	}
-*/		
 		// strncpy在拷贝的时候，即使长度还没到，但是遇到0也会自动截断
 		//strncpy(thread_param.buf, buf, sizeof(buf));
 		memcpy(thread_param.buf, buf, res);
@@ -250,14 +239,13 @@ void *master_client_send(void *pth_arg) {
 	int index = thread_param->clientIndex;
 	int bufSize = thread_param->bufSize;
 
-	printf("thread_param->clientIndex: %d\n", index);
 	LogWrite(DEBUG, "%d %s :%d", __LINE__, "master-client thread created and acceptfd", tcp_info[index].acceptfd);
 
 	int res = send(tcp_info[index].acceptfd, buf, bufSize, 0);
 	if (EXIT_FAIL_CODE == res) {
-		LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send failed", strerror(errno), tcp_info[index].address, tcp_info[index].port);
+		LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to", tcp_info[index].address, strerror(errno), tcp_info[index].port);
 	} else if(res > 0) {
-		LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send msgs to", tcp_info[index].address, tcp_info[index].port);
+		LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", tcp_info[index].address, tcp_info[index].port);
 	}
 	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread unlocked by client", thread_param->clientIndex);
 	pthread_mutex_unlock(&mute);
