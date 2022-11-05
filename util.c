@@ -179,7 +179,7 @@ void master_receive(threadpool_t *thp) {
 					记录传输数据
 				*/
                 // 写入到一个文件中
-                fprintf(file,"%x", buf[i]);
+                fprintf(file,"0x%x ", buf[i]);
 			}
             fprintf(file,"\n");
             fclose(file);

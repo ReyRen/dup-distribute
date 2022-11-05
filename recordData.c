@@ -227,7 +227,7 @@ int initDataRecord(FILE **file) {
     }
 
     CreateDataFile(path);
-    temp = fopen(path, "rwa+");
+    temp = fopen(path, "w+");
     if (temp == NULL) {
         LogWrite(ERROR, "%d %s :%s", __LINE__, "fopen failed", strerror(errno));
         return EXIT_FAIL_CODE;
