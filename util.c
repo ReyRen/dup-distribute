@@ -1,4 +1,5 @@
 #include "util.h"
+#include "dataHeader.h"
 
 TCP_INFO *tcp_info; 
 pthread_mutex_t mute;
@@ -185,9 +186,41 @@ void master_receive(threadpool_t *thp) {
 				*/
                 // 写入到一个文件中
                 fprintf(file,"%c", buf[i]);
+
+                if (i != 0 && i % 16 == 0) {
+                    printf("\n");
+                }
+                printf("%02X ", (unsigned char)(buf[i]));
 			}
             //fprintf(file,"\n");
             fclose(file);
+
+            static SeaCommunication seaCommunication;
+            static BDCommunication bdCommunication;
+
+            // 从接收的消息数列中提取一个数据头信息出来
+            memcpy(&seaCommunication,buf,sizeof(seaCommunication));
+            memcpy(&bdCommunication,buf,sizeof(bdCommunication));
+
+            if (seaCommunication.PacketHead == 0x66666666) {
+                printf("\nSeaCommunication:\n");
+                printf("PacketHead: %d\n", seaCommunication.PacketHead);
+                printf("PayloadSize: %d\n", seaCommunication.PayloadSize);
+                printf("ChunkNum: %d\n", seaCommunication.ChunkNum);
+                printf("ChunkID: %d\n", seaCommunication.ChunkID);
+                printf("DataTime: %d\n", seaCommunication.DataTime);
+                printf("Longitude: %f\n", seaCommunication.Longitude);
+                printf("Latitude: %f\n", seaCommunication.Latitude);
+                printf("SystemID: %d\n", seaCommunication.SystemID);
+                printf("DataType: %d\n", seaCommunication.DataType);
+            } else if (bdCommunication.PacketHead == 0xEB) {
+                printf("\nBdCommunication:\n");
+                printf("PacketHead: %d\n", bdCommunication.PacketHead);
+                printf("SystemID: %d\n", bdCommunication.SystemID);
+                printf("DataType: %d\n", bdCommunication.DataType);
+            } else {
+                printf("Not SeaCommunication data or BdCommunication data\n");
+            }
 		} else if (res == 0) {
 			break;
 		}
