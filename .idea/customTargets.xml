@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CLionExternalBuildManager">
+    <target id="ad6a0c54-9885-4452-bb44-878f84b0c868" name="make-mac" defaultType="MAKE">
+      <configuration id="d09550f0-3c9f-41f7-9392-eef4a3f41efb" name="make-mac" toolchainName="C环境">
+        <build type="MAKE">
+          <make targetName="mac-make" />
+        </build>
+        <clean type="MAKE">
+          <make targetName="mac-clean" />
+        </clean>
+      </configuration>
+    </target>
+  </component>
+</project>
