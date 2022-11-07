@@ -27,17 +27,15 @@ static unsigned int CreateDataDir(char *path, unsigned int *uuid) {
     strcat(value, "/");
     strcat(value, data); //./data/20221106
 
-    if (opendir(value) == NULL) {
-        *uuid = 0; // 表示目录已经不存在，说明需要重新编排流水号
-        // 没有该目录
+    if (access(value, F_OK) == 0) {
+        (*uuid)++; // 表示目录已经存在，说明就是当天的目录
+    } else {
         int ret = mkdir(value, MODE_DIR);//创建目录
         if (ret != 0) {
             LogWrite(ERROR, "%d %s :%s", __LINE__, "mkdir failed", strerror(errno));
             return EXIT_FAIL_CODE;
         }
-
-    } else {
-        (*uuid)++; // 表示目录已经存在，说明就是当天的目录
+        (*uuid) = 0;
     }
     memset(path, 0, 512);
     memcpy(path, value, strlen(value));
@@ -56,7 +54,7 @@ static void CreateDataFile(char *path, unsigned int *uuid) {
         *uuid = 0;
     }
     strcat(path, "/");
-    sprintf(charValue, "%d_03%d", timestamp, *uuid);
+    sprintf(charValue, "%d_%03d", timestamp, *uuid);
     strcat(path, charValue);
     strcat(path, ".data");
 }
