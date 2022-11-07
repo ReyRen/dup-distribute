@@ -10,7 +10,7 @@ void GetDirName(char *date) {
     strftime(date, 11, "%Y%m%d", localtime(&timer));
 }
 
-static unsigned int CreateDataDir(char *path) {
+static unsigned int CreateDataDir(char *path, unsigned int *uuid) {
     char value[512]={0x0};
     char data[50]={0x0};
 
@@ -28,6 +28,7 @@ static unsigned int CreateDataDir(char *path) {
     strcat(value, data); //./data/20221106
 
     if (opendir(value) == NULL) {
+        *uuid = 0; // 表示目录已经不存在，说明需要重新编排流水号
         // 没有该目录
         int ret = mkdir(value, MODE_DIR);//创建目录
         if (ret != 0) {
@@ -35,6 +36,8 @@ static unsigned int CreateDataDir(char *path) {
             return EXIT_FAIL_CODE;
         }
 
+    } else {
+        (*uuid)++; // 表示目录已经存在，说明就是当天的目录
     }
     memset(path, 0, 512);
     memcpy(path, value, strlen(value));
@@ -42,21 +45,23 @@ static unsigned int CreateDataDir(char *path) {
     return EXIT_SUCCESS_CODE;
 }
 
-static void CreateDataFile(char *path) {
+static void CreateDataFile(char *path, unsigned int *uuid) {
     char charValue[512] = {0x0};
 
     //生成UTC时间戳文件
     time_t t;
     t = time(NULL);
     unsigned int timestamp = time(&t);
-
+    if (*uuid > 999) {
+        *uuid = 0;
+    }
     strcat(path, "/");
-    sprintf(charValue, "%d", timestamp);
+    sprintf(charValue, "%d_03%d", timestamp, *uuid);
     strcat(path, charValue);
     strcat(path, ".data");
 }
 
-int initDataRecord(FILE **file) {
+int initDataRecord(FILE **file, unsigned int *uuid) {
     //创建目录
     FILE *temp;
     char path[512] = {0x0};
@@ -65,7 +70,7 @@ int initDataRecord(FILE **file) {
 
 
     if (access(path, F_OK) == 0) {
-        if (CreateDataDir(path) == EXIT_FAIL_CODE) {
+        if (CreateDataDir(path, uuid) == EXIT_FAIL_CODE) {
             LogWrite(ERROR, "%d %s", __LINE__, "CreateDataDir failed");
             return EXIT_FAIL_CODE;
         }
@@ -75,7 +80,7 @@ int initDataRecord(FILE **file) {
     }
 
     //创建文件
-    CreateDataFile(path);
+    CreateDataFile(path, uuid);
     temp = fopen(path, "w+");
     if (temp == NULL) {
         LogWrite(ERROR, "%d %s :%s", __LINE__, "fopen failed", strerror(errno));

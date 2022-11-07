@@ -148,6 +148,7 @@ int master_client_socket(int index) {
 
 void master_receive(threadpool_t *thp) {
 	int master_acceptfd;
+    unsigned int uuid;
 	int client_number = tcp_info[0].clientNum;
 	pthread_t tids[client_number];
 	unsigned char buf[MAX_BUFFER_SIZE] = {0};
@@ -174,25 +175,24 @@ void master_receive(threadpool_t *thp) {
                 16进制数，主要得知道接收的每个16进制数的大小。
                 char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
             */
-            int ret = initDataRecord(&file);
+            int ret = initDataRecord(&file, &uuid);
             if (ret == EXIT_FAIL_CODE) {
                 LogWrite(ERROR, "%d %s:", __LINE__, "master received message get failed");
                 return;
             }
 
+            /*
+                记录传输数据
+            */
+            // 写入到一个文件中
+            fwrite(buf, sizeof(char), res, file);
 			for (int i = 0; i < res; i++) {
-				/*
-					记录传输数据
-				*/
-                // 写入到一个文件中
-                fprintf(file,"%c", buf[i]);
-
+                //fprintf(file,"%c", buf[i]);
                 if (i != 0 && i % 16 == 0) {
                     printf("\n");
                 }
                 printf("%02X ", (unsigned char)(buf[i]));
 			}
-            //fprintf(file,"\n");
             fclose(file);
 
             static SeaCommunication seaCommunication;
