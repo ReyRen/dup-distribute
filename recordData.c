@@ -61,9 +61,8 @@ static void CreateDataFile(char *path, unsigned int *uuid) {
     strcat(path, ".data");
 }
 
-int initDataRecord(FILE **file, unsigned int *uuid) {
+FILE* initDataRecord(FILE *fp, unsigned int *uuid) {
     //创建目录
-    FILE *temp;
     char path[512] = {0x0};
     getcwd(path, sizeof(path));
     strcat(path, CONFIGFILE);
@@ -72,21 +71,21 @@ int initDataRecord(FILE **file, unsigned int *uuid) {
     if (access(path, F_OK) == 0) {
         if (CreateDataDir(path, uuid) == EXIT_FAIL_CODE) {
             LogWrite(ERROR, "%d %s", __LINE__, "CreateDataDir failed");
-            return EXIT_FAIL_CODE;
+            return NULL;
         }
     } else {
         LogWrite(ERROR, "%d %s :%s", __LINE__, "data directory create failed", strerror(errno));
-        return EXIT_FAIL_CODE;
+        return NULL;
     }
 
     //创建文件
     CreateDataFile(path, uuid);
-    temp = fopen(path, "w+");
-    if (temp == NULL) {
+    fp = fopen(path, "w+");
+    if (fp == NULL) {
         LogWrite(ERROR, "%d %s :%s", __LINE__, "fopen failed", strerror(errno));
-        return EXIT_FAIL_CODE;
+        return NULL;
     }
 
-    *file = temp;
-    return EXIT_SUCCESS_CODE;
+
+    return fp;
 }
