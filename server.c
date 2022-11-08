@@ -10,9 +10,7 @@ int main(int argc, char ** argv)
 	LogWrite(INFO, "%d %s", __LINE__, "parse config file to distribute&playbook");
 	
 	extern DISTRIBUTE_TCP_INFO *distributeTcpInfo;
-    extern PLAYBACK_TCP_INFO playbackTcpInfo;
 	parseFile_distributeTcpInfo(&distributeTcpInfo);
-    parseFile_playbackTcpInfo(&playbackTcpInfo);
 
 
 threadpool_t thp;

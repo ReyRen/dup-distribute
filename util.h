@@ -24,7 +24,7 @@
 
 
 typedef struct thread_param {
-	char				buf[MAX_BUFFER_SIZE];
+	unsigned char		buf[MAX_BUFFER_SIZE];
 	int					bufSize;
 	int					clientIndex;
 }THREAD_PARAM;
@@ -34,14 +34,12 @@ typedef struct tcpInfo {
 	int            		port;
 	int					acceptfd;
 	int					clientNum;
-}DISTRIBUTE_TCP_INFO, PLAYBACK_TCP_INFO;
+}DISTRIBUTE_TCP_INFO;
+DISTRIBUTE_TCP_INFO *distributeTcpInfo;
 
-void distribute_server(threadpool_t *thp);
-void playback_server(threadpool_t *thp);
-
-void parseFile_distributeTcpInfo(DISTRIBUTE_TCP_INFO **distributeTcpInfo);
-void parseFile_playbackTcpInfo(PLAYBACK_TCP_INFO *playbackTcpInfo);
-void *distribute_client_send(void *pth_arg);
-void distribute_receive(threadpool_t *thp);
-int distribute_client_socket(int index);
 void server_start(threadpool_t *thp);
+void distribute_server(threadpool_t *thp);
+void distribute_receive(threadpool_t *thp);
+void distribute_run(unsigned char *receive_buf, int receive_size);
+void *distribute_client_send(void *pth_arg);
+void parseFile_distributeTcpInfo(DISTRIBUTE_TCP_INFO **distributeTcpInfo);
