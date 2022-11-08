@@ -188,51 +188,34 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
                      "distribute-client socket failed, only record",
                      distributeTcpInfo[i].address, distributeTcpInfo[i].port);
             distributeTcpInfo[i].acceptfd = -1;
-            file = initDataRecord(file, &uuid);
-            if (file == NULL) {
-                LogWrite(ERROR, "%d %s:", __LINE__, "distribute initDataRecord failed");
-                return;
-            }
-            /*
-                记录传输数据
-            */
-            fwrite(receive_buf, sizeof(char), receive_size, file);
-            for (int i = 0; i < receive_size; i++) {
-                if (i != 0 && i % 16 == 0) {
-                    printf("\n");
-                }
-                printf("%02X ", (unsigned char)(receive_buf[i]));
-            }
-            fclose(file);
-            continue;
         } else {
             LogWrite(DEBUG, "%d %s :%s:%d %d", __LINE__,
                      "distribute-client socket created",
                      distributeTcpInfo[i].address, distributeTcpInfo[i].port, distributeTcpInfo[i].acceptfd);
-            /*
-             * 直接读buf会碰到0结束的情况
-                发送方给的数据就是一个字节的16进制数（0x89这类型），一16进制是4bit，也就是半字节。所以定义接收
-                16进制数，主要得知道接收的每个16进制数的大小。
-                char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
-            */
-            file = initDataRecord(file, &uuid);
-            if (file == NULL) {
-                LogWrite(ERROR, "%d %s:", __LINE__, "distribute initDataRecord failed");
-                return;
-            }
-            /*
-                记录传输数据
-            */
-            fwrite(receive_buf, sizeof(char), receive_size, file);
-            for (int i = 0; i < receive_size; i++) {
-                if (i != 0 && i % 16 == 0) {
-                    printf("\n");
-                }
-                printf("%02X ", (unsigned char)(receive_buf[i]));
-            }
-            fclose(file);
         }
     }
+    /*
+     * 直接读buf会碰到0结束的情况
+        发送方给的数据就是一个字节的16进制数（0x89这类型），一16进制是4bit，也就是半字节。所以定义接收
+        16进制数，主要得知道接收的每个16进制数的大小。
+        char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
+    */
+    file = initDataRecord(file, &uuid);
+    if (file == NULL) {
+        LogWrite(ERROR, "%d %s:", __LINE__, "distribute initDataRecord failed");
+        return;
+    }
+    /*
+        记录传输数据
+    */
+    fwrite(receive_buf, sizeof(char), receive_size, file);
+    for (int i = 0; i < receive_size; i++) {
+        if (i != 0 && i % 16 == 0) {
+            printf("\n");
+        }
+        printf("%02X ", (unsigned char)(receive_buf[i]));
+    }
+    fclose(file);
 
     // strncpy在拷贝的时候，即使长度还没到，但是遇到0也会自动截断
     //strncpy(thread_param.buf, buf, sizeof(buf));
@@ -243,7 +226,7 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
     for (int i = 0; i < client_number; i++) {
         //创建线程锁
         thread_param.clientIndex = i + 1;
-        int ret = pthread_create(&tids[i], NULL,distribute_client_send, (void *)&thread_param);
+        int ret = pthread_create(&tids[i], NULL, distribute_client_send, (void *)&thread_param);
         if (EXIT_FAIL_CODE == ret) {
             LogWrite(ERROR, "%d %s :%s", __LINE__,
                      "distribute-client thread create failed", strerror(errno));
