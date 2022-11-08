@@ -7,10 +7,13 @@ int main(int argc, char ** argv)
 	LogWrite(INFO, "%d %s", __LINE__, "*********Start Server*********");
 
 
-	LogWrite(INFO, "%d %s", __LINE__, "parse config file to tcp_info");
+	LogWrite(INFO, "%d %s", __LINE__, "parse config file to distribute&playbook");
 	
-	extern TCP_INFO *tcp_info;
-	parseFile_tcpInfo(&tcp_info);
+	extern DISTRIBUTE_TCP_INFO *distributeTcpInfo;
+    extern PLAYBACK_TCP_INFO playbackTcpInfo;
+	parseFile_distributeTcpInfo(&distributeTcpInfo);
+    parseFile_playbackTcpInfo(&playbackTcpInfo);
+
 
 threadpool_t thp;
 /*
@@ -22,7 +25,9 @@ threadpool_t thp;
 	}
 */
 	LogWrite(INFO, "%d %s", __LINE__, "init tcp connection");
-	tcp_server(&thp);
+
+    server_start(&thp);
+
 
 	return EXIT_SUCCESS_CODE;
 }

@@ -34,12 +34,14 @@ typedef struct tcpInfo {
 	int            		port;
 	int					acceptfd;
 	int					clientNum;
-}TCP_INFO;
+}DISTRIBUTE_TCP_INFO, PLAYBACK_TCP_INFO;
 
-//void tcp_server(TCP_INFO *tcp_info);
-void tcp_server(threadpool_t *thp);
-void parseFile_tcpInfo(TCP_INFO **tcp_info);
-void *master_client_send(void *pth_arg);
-//void master_receive(TCP_INFO *tcp_info);
-void master_receive(threadpool_t *thp);
-int master_client_socket(int index);
+void distribute_server(threadpool_t *thp);
+void playback_server(threadpool_t *thp);
+
+void parseFile_distributeTcpInfo(DISTRIBUTE_TCP_INFO **distributeTcpInfo);
+void parseFile_playbackTcpInfo(PLAYBACK_TCP_INFO *playbackTcpInfo);
+void *distribute_client_send(void *pth_arg);
+void distribute_receive(threadpool_t *thp);
+int distribute_client_socket(int index);
+void server_start(threadpool_t *thp);
