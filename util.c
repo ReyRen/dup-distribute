@@ -97,28 +97,23 @@ void playback_server(threadpool_t *thp) {
             char sendbuf[MAX_BUFFER_SIZE] = {0};
             char recbuf[MAX_BUFFER_SIZE] = {0};
             static ReplayProtocol replayProtocol;
-
-
-            if (replayProtocol.PacketHead == 0x66666666) {
-
-                while (1) {
-                    // child process
-                    bzero(&recbuf, sizeof(recv));
-                    res = recv(playbackTcpInfo.acceptfd, &recbuf, sizeof(recbuf), 0);
-                    if (EXIT_FAIL_CODE == res) {
-                        LogWrite(ERROR, "%d %s :%s", __LINE__,
-                                 "playbook server receive error", strerror(errno));
-                    }
-                    // 从接收的消息数列中提取一个数据头信息出来
-                    memcpy(&replayProtocol, recbuf, sizeof(ReplayProtocol));
-                    if (replayProtocol.PacketHead == 0x88888888) {
-                        printf("0000000000starttime: %d", replayProtocol.StartTime);
-                    }
-                    bzero(&sendbuf, sizeof(sendbuf));
-                    res = send(playbackTcpInfo.acceptfd, &sendbuf, sizeof(sendbuf), 0);
-                    if (EXIT_FAIL_CODE == res) {
-                        printf("%s\n", "xxxxxxxxxxxxxxxxsend done");
-                    }
+            while (1) {
+                // child process
+                bzero(&recbuf, sizeof(recv));
+                res = recv(playbackTcpInfo.acceptfd, &recbuf, sizeof(recbuf), 0);
+                if (EXIT_FAIL_CODE == res) {
+                    LogWrite(ERROR, "%d %s :%s", __LINE__,
+                             "playbook server receive error", strerror(errno));
+                }
+                // 从接收的消息数列中提取一个数据头信息出来
+                memcpy(&replayProtocol, recbuf, sizeof(ReplayProtocol));
+                if (replayProtocol.PacketHead == 0x88888888) {
+                    printf("0000000000starttime: %d", replayProtocol.StartTime);
+                }
+                bzero(&sendbuf, sizeof(sendbuf));
+                res = send(playbackTcpInfo.acceptfd, &sendbuf, sizeof(sendbuf), 0);
+                if (EXIT_FAIL_CODE == res) {
+                    printf("%s\n", "xxxxxxxxxxxxxxxxsend done");
                 }
             }
         }
