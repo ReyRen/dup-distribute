@@ -233,9 +233,9 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
             close(distributeTcpInfo[i+1].acceptfd);
             distributeTcpInfo[i+1].acceptfd = 0;
         }
-        for (int i = 0; i < client_number; i++) {
-            pthread_join(tids[i], NULL);
-        }
+    }
+    for (int i = 0; i < client_number; i++) {
+        pthread_join(tids[i], NULL);
     }
     //释放锁
     LogWrite(DEBUG, "%d %s", __LINE__, "distribute-client thread mutex destroy");
