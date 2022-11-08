@@ -116,7 +116,6 @@ void playback_server(threadpool_t *thp) {
                     }
                     bzero(&sendbuf, sizeof(sendbuf));
                     res = send(playbackTcpInfo.acceptfd, &sendbuf, sizeof(sendbuf), 0);
-                    res = send(playbackTcpInfo.acceptfd, "xyz", sizeof("xyz"), 0);
                     if (EXIT_FAIL_CODE == res) {
                         printf("%s\n", "xxxxxxxxxxxxxxxxsend done");
                     }
