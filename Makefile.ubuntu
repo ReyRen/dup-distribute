@@ -12,7 +12,7 @@ BIN_SENDER=dd-sender
 all:$(BIN_SERVER) $(BIN_CLIENT) $(BIN_SENDER)
 %.o:%.c
 	$(CC) $(CFLAGS) -c $< -o $@
-dd-server:server.o util.o log.o ConfigFile.o jinzhiConvert.o recordData.o
+dd-server:server.o util.o log.o ConfigFile.o jinzhiConvert.o recordData.o playback.o
 	$(CC) $(CFLAGS) $^ -I$(BUILDDIR)/include -Wl,--rpath=$(BUILDDIR)/lib -Wl,--dynamic-linker=$(BUILDDIR)/lib/ld-linux-x86-64.so.2 -pthread -o $@
 dd-sender:sender.o util.o log.o ConfigFile.o jinzhiConvert.o recordData.o
 	$(CC) $(CFLAGS) $^ -I$(BUILDDIR)/include -Wl,--rpath=$(BUILDDIR)/lib -Wl,--dynamic-linker=$(BUILDDIR)/lib/ld-linux-x86-64.so.2 -pthread -o $@
