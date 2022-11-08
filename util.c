@@ -1,7 +1,7 @@
 #include "util.h"
 #include "playback.h"
 
-//DISTRIBUTE_TCP_INFO *distributeTcpInfo;
+DISTRIBUTE_TCP_INFO *distributeTcpInfo;
 pthread_mutex_t mute;
 
 void server_start(threadpool_t *thp) {
@@ -225,6 +225,7 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
     LogWrite(DEBUG, "%d %s", __LINE__, "distribute-client thread mutex init");
     for (int i = 0; i < client_number; i++) {
         //创建线程锁
+        pthread_mutex_lock(&mute);
         thread_param.clientIndex = i + 1;
         int ret = pthread_create(&tids[i], NULL, distribute_client_send, (void *)&thread_param);
         if (EXIT_FAIL_CODE == ret) {
@@ -244,7 +245,6 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
 }
 
 void *distribute_client_send(void *pth_arg) {
-	pthread_mutex_lock(&mute);
 	THREAD_PARAM *thread_param = (THREAD_PARAM *)pth_arg;
 	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread locked by client", thread_param->clientIndex);
 	unsigned char *buf = thread_param->buf;

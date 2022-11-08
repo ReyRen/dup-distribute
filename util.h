@@ -35,7 +35,6 @@ typedef struct tcpInfo {
 	int					acceptfd;
 	int					clientNum;
 }DISTRIBUTE_TCP_INFO;
-DISTRIBUTE_TCP_INFO *distributeTcpInfo;
 
 void server_start(threadpool_t *thp);
 void distribute_server(threadpool_t *thp);
