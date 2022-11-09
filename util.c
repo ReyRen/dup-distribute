@@ -155,12 +155,12 @@ void distribute_receive(threadpool_t *thp) {
             memcpy(&bdCommunication, buf, sizeof(BDCommunication));
             memcpy(&replayProtocol, buf, sizeof(ReplayProtocol));
 
-            if (seaCommunication.PacketHead == 0x66666666 ||
-                    bdCommunication.PacketHead == 0xEB) {
+            if (seaCommunication.PacketHead == SEACOMMHEADER ||
+                    bdCommunication.PacketHead == BDCOMMHEADER) {
                 // 转发
                 distribute_run(buf, res);
 
-            } else if (replayProtocol.PacketHead == 0x88888888) {
+            } else if (replayProtocol.PacketHead == PLAYBACKHEADER) {
                 // 回放
                 playback_run(buf, res);
             }

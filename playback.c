@@ -1,6 +1,7 @@
 #include "playback.h"
 #include "util.h"
 
+DISTRIBUTE_TCP_INFO *distributeTcpInfo;
 //
 // Created by Yuan Ren on 2022/11/8.
 //
@@ -16,10 +17,19 @@ void playback_run(unsigned char *receive_buf, int receive_size) {
     unsigned int commandtype = replayProtocol.CommandType;
     unsigned int speed = replayProtocol.Speed;
 
-    printf("starttime=%d\n", starttime);
-    printf("endtime=%d\n", endtime);
-    printf("commandtype=%d\n", commandtype);
-    printf("speed=%d\n", speed);
-
-
+    if (commandtype == PLAYBACK_START) {
+        printf("\n");
+        printf("\n");
+        printf("\n");
+        printf("IP: %s\n", distributeTcpInfo[0].address);
+    } else if (commandtype == PLAYBACK_END) {
+        printf("\n");
+        printf("\n");
+        printf("\n");
+        printf("IP: %s\n", distributeTcpInfo[0].address);
+    } else {
+        LogWrite(ERROR, "%d %s", __LINE__,
+                 "Wrong playback signal get");
+        return;
+    }
 }

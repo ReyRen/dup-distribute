@@ -14,6 +14,14 @@ typedef float               FLOAT;
 typedef float REAL32;
 typedef double REAL64;
 
+#define SEACOMMHEADER       0x66666666
+
+#define BDCOMMHEADER        0xEB
+
+#define PLAYBACKHEADER      0x88888888
+#define PLAYBACK_START      1
+#define PLAYBACK_END        2
+
 typedef struct SeaCommunication
 {
     UINT32 PacketHead;
@@ -36,8 +44,8 @@ typedef struct BDCommunication
 
 typedef struct replayProtocol
 {
-    UINT32 PacketHead;      // 帧头，固定值0x88888888
-    UINT8  CommandType;     // 回放指令类型，1：开始回放，0：停止回放，2：切换回实时
+    UINT32 PacketHead;
+    UINT8  CommandType;
     UINT32 StartTime;       // 历史数据的起始时间，精度为秒，返回从1970年1月1日(UTC)开始所经过的秒数
     UINT32 EndTime;         // 历史数据的结束时间，精度为秒，返回从1970年1月1日(UTC)开始所经过的秒数
     UINT8  Speed;           // 倍速，最小5倍速，最大60倍速
