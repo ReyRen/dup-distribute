@@ -8,3 +8,4 @@
 
 
 FILE* initDataRecord(FILE * file);
+void GetDirName(char *date);

@@ -8,5 +8,6 @@
 #define DUP_DISTRIBUTE_PLAYBACK_H
 
 void playback_run(unsigned char *receive_buf, int receive_size, int distribute_acceptfd);
+int myscandirServe(unsigned int starttime, unsigned int endtime, int distribute_acceptfd, unsigned int speed);
 
 #endif //DUP_DISTRIBUTE_PLAYBACK_H
