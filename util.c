@@ -196,12 +196,12 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
         记录传输数据
     */
     fwrite(receive_buf, sizeof(char), receive_size, file);
-    for (int i = 0; i < receive_size; i++) {
+    /*for (int i = 0; i < receive_size; i++) {
         if (i != 0 && i % 16 == 0) {
             printf("\n");
         }
         printf("%02X ", (unsigned char)(receive_buf[i]));
-    }
+    }*/
     fclose(file);
 
     // strncpy在拷贝的时候，即使长度还没到，但是遇到0也会自动截断

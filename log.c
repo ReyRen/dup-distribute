@@ -94,6 +94,7 @@ static LOGSET* GetLogSet() {
 
 static void SetTime() {
     time_t timer = time(NULL);
+    printf("%d:%d:%d\n", localtime(&timer)->tm_hour, localtime(&timer)->tm_min, localtime(&timer)->tm_sec);
     strftime(loging.logtime, 20, "%Y-%m-%d %H:%M:%S", localtime(&timer));
 }
 
