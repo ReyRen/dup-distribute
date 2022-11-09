@@ -118,6 +118,7 @@ int distribute_client_socket(int index) {
 	res = connect(socketfd,(struct sockaddr*)&addr, sizeof(addr));
 	if(EXIT_FAIL_CODE == res) {
 		LogWrite(ERROR, "%d %s :%s", __LINE__, "master-client connect failed", distributeTcpInfo[index].address);
+        close(socketfd);
 		return EXIT_FAIL_CODE;
 	}
     distributeTcpInfo[index].acceptfd = socketfd;
@@ -179,21 +180,6 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
     THREAD_PARAM thread_param;
 
     bzero(&thread_param, sizeof(THREAD_PARAM));
-
-    LogWrite(DEBUG, "%d %s", __LINE__, "distribute client socket creating");
-    for (int i = 1; i <= distributeTcpInfo[0].clientNum; i++) {
-        int res = distribute_client_socket(i); // -1 error
-        if (res == EXIT_FAIL_CODE) {
-            LogWrite(ERROR, "%d %s :%s:%d", __LINE__,
-                     "distribute-client socket failed, only record",
-                     distributeTcpInfo[i].address, distributeTcpInfo[i].port);
-            distributeTcpInfo[i].acceptfd = -1;
-        } else {
-            LogWrite(DEBUG, "%d %s :%s:%d %d", __LINE__,
-                     "distribute-client socket created",
-                     distributeTcpInfo[i].address, distributeTcpInfo[i].port, distributeTcpInfo[i].acceptfd);
-        }
-    }
     /*
      * 直接读buf会碰到0结束的情况
         发送方给的数据就是一个字节的16进制数（0x89这类型），一16进制是4bit，也就是半字节。所以定义接收
@@ -245,20 +231,36 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
 }
 
 void *distribute_client_send(void *pth_arg) {
-	THREAD_PARAM *thread_param = (THREAD_PARAM *)pth_arg;
-	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread locked by client", thread_param->clientIndex);
-	unsigned char *buf = thread_param->buf;
-	int index = thread_param->clientIndex;
-	int bufSize = thread_param->bufSize;
+    THREAD_PARAM *thread_param = (THREAD_PARAM *)pth_arg;
+    LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread locked by client", thread_param->clientIndex);
+    unsigned char *buf = thread_param->buf;
+    int index = thread_param->clientIndex;
+    int bufSize = thread_param->bufSize;
+
+    int res;
+
+    LogWrite(DEBUG, "%d %s", __LINE__, "distribute client socket creating");
+    res = distribute_client_socket(index); // -1 error
+    if (res == EXIT_FAIL_CODE) {
+        LogWrite(ERROR, "%d %s :%s:%d", __LINE__,
+                 "distribute-client socket failed, only record",
+                 distributeTcpInfo[index].address, distributeTcpInfo[index].port);
+        distributeTcpInfo[index].acceptfd = -1;
+    } else {
+        LogWrite(DEBUG, "%d %s :%s:%d %d", __LINE__,
+                 "distribute-client socket created",
+                 distributeTcpInfo[index].address, distributeTcpInfo[index].port, distributeTcpInfo[index].acceptfd);
+    }
 
 	LogWrite(DEBUG, "%d %s :%d", __LINE__, "master-client thread created and acceptfd", distributeTcpInfo[index].acceptfd);
 
-	int res = send(distributeTcpInfo[index].acceptfd, buf, bufSize, 0);
+	res = send(distributeTcpInfo[index].acceptfd, buf, bufSize, 0);
 	if (EXIT_FAIL_CODE == res) {
 		LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to", distributeTcpInfo[index].address, strerror(errno), distributeTcpInfo[index].port);
 	} else if(res > 0) {
 		LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", distributeTcpInfo[index].address, distributeTcpInfo[index].port);
 	}
+    close(distributeTcpInfo[index].acceptfd);
 	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread unlocked by client", thread_param->clientIndex);
 	pthread_mutex_unlock(&mute);
 
