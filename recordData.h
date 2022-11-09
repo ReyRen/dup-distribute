@@ -7,4 +7,4 @@
 #define MODE_DIR (S_IRWXU | S_IRWXG | S_IRWXO)
 
 
-FILE* initDataRecord(FILE * file, unsigned int *uuid);
+FILE* initDataRecord(FILE * file);

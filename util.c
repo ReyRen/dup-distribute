@@ -2,6 +2,7 @@
 #include "playback.h"
 
 DISTRIBUTE_TCP_INFO *distributeTcpInfo;
+unsigned int uuid;
 pthread_mutex_t mute;
 
 void server_start(threadpool_t *thp) {
@@ -174,7 +175,7 @@ void distribute_receive(threadpool_t *thp) {
 
 void distribute_run(unsigned char *receive_buf, int receive_size) {
     FILE *file = {0x0};
-    unsigned int uuid;
+    //unsigned int uuid;
     int client_number = distributeTcpInfo[0].clientNum;
     pthread_t tids[client_number];
     THREAD_PARAM thread_param;
@@ -186,7 +187,7 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
         16进制数，主要得知道接收的每个16进制数的大小。
         char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
     */
-    file = initDataRecord(file, &uuid);
+    file = initDataRecord(file);
     if (file == NULL) {
         LogWrite(ERROR, "%d %s:", __LINE__, "distribute initDataRecord failed");
         return;

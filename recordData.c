@@ -1,6 +1,7 @@
 #include "recordData.h"
 
 pthread_mutex_t data_mutex = PTHREAD_MUTEX_INITIALIZER; /*初始化互斥锁*/
+extern unsigned int uuid;
 
 /*
  * 存data的目录名是精确到日的时间：e.g.20221105
@@ -10,7 +11,7 @@ void GetDirName(char *date) {
     strftime(date, 11, "%Y%m%d", localtime(&timer));
 }
 
-static unsigned int CreateDataDir(char *path, unsigned int *uuid) {
+static unsigned int CreateDataDir(char *path) {
     char value[512]={0x0};
     char data[50]={0x0};
 
@@ -28,14 +29,14 @@ static unsigned int CreateDataDir(char *path, unsigned int *uuid) {
     strcat(value, data); //./data/20221106
 
     if (access(value, F_OK) == 0) {
-        (*uuid)++; // 表示目录已经存在，说明就是当天的目录
+        uuid++; // 表示目录已经存在，说明就是当天的目录
     } else {
         int ret = mkdir(value, MODE_DIR);//创建目录
         if (ret != 0) {
             LogWrite(ERROR, "%d %s :%s", __LINE__, "mkdir failed", strerror(errno));
             return EXIT_FAIL_CODE;
         }
-        (*uuid) = 0;
+        uuid = 0;
     }
     memset(path, 0, 512);
     memcpy(path, value, strlen(value));
@@ -43,23 +44,23 @@ static unsigned int CreateDataDir(char *path, unsigned int *uuid) {
     return EXIT_SUCCESS_CODE;
 }
 
-static void CreateDataFile(char *path, unsigned int *uuid) {
+static void CreateDataFile(char *path) {
     char charValue[512] = {0x0};
 
     //生成UTC时间戳文件
     time_t t;
     t = time(NULL);
     unsigned int timestamp = time(&t);
-    if (*uuid > 999) {
-        *uuid = 0;
+    if (uuid > 999) {
+        uuid = 0;
     }
     strcat(path, "/");
-    sprintf(charValue, "%d_%03d", timestamp, *uuid);
+    sprintf(charValue, "%d_%03d", timestamp, uuid);
     strcat(path, charValue);
     strcat(path, ".data");
 }
 
-FILE* initDataRecord(FILE *fp, unsigned int *uuid) {
+FILE* initDataRecord(FILE *fp) {
     //创建目录
     char path[512] = {0x0};
     getcwd(path, sizeof(path));
@@ -67,7 +68,7 @@ FILE* initDataRecord(FILE *fp, unsigned int *uuid) {
 
 
     if (access(path, F_OK) == 0) {
-        if (CreateDataDir(path, uuid) == EXIT_FAIL_CODE) {
+        if (CreateDataDir(path) == EXIT_FAIL_CODE) {
             LogWrite(ERROR, "%d %s", __LINE__, "CreateDataDir failed");
             return NULL;
         }
@@ -77,7 +78,7 @@ FILE* initDataRecord(FILE *fp, unsigned int *uuid) {
     }
 
     //创建文件
-    CreateDataFile(path, uuid);
+    CreateDataFile(path);
     fp = fopen(path, "w+");
     if (fp == NULL) {
         LogWrite(ERROR, "%d %s :%s", __LINE__, "fopen failed", strerror(errno));
