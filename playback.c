@@ -61,7 +61,7 @@ int scanAndSend(char *path, char *starttime,
                 LogWrite(ERROR, "%d %s %s :%d", __LINE__, "playback send [FAIL] to fd",
                          strerror(errno), distribute_acceptfd);
             } else if(res > 0) {
-                LogWrite(DEBUG, "%d %s :%d", __LINE__, "playback send [SUCCESS] to fd", distribute_acceptfd);
+                LogWrite(DEBUG, "%d %s :%d", __LINE__, "playback send [SUCCESS] ", namelist[i]->d_name);
             }
 
             free(buffer);
