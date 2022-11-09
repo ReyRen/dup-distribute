@@ -101,7 +101,7 @@ static void SetTime() {
             localtime(&timer)->tm_year,
             localtime(&timer)->tm_mon,
             localtime(&timer)->tm_mday,
-            localtime(&timer)->tm_hour,
+            localtime(&timer)->tm_hour+8,
             localtime(&timer)->tm_min,
             localtime(&timer)->tm_sec);
 }
