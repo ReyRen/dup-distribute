@@ -10,7 +10,10 @@ const static char LogLevelText[4][10]={"INFO","DEBUG","WARN","ERROR"};
 
 void GetDate(char *date) {
     time_t timer = time(NULL);
-    strftime(date, 11, "%Y-%m-%d", localtime(&timer));
+    sprintf(date, "%d-%d-%d",
+            localtime(&timer)->tm_year,
+            localtime(&timer)->tm_mon,
+            localtime(&timer)->tm_mday);
 }
 
 unsigned char GetCode(char *path) {
@@ -94,8 +97,13 @@ static LOGSET* GetLogSet() {
 
 static void SetTime() {
     time_t timer = time(NULL);
-    printf("%d:%d:%d\n", localtime(&timer)->tm_hour, localtime(&timer)->tm_min, localtime(&timer)->tm_sec);
-    strftime(loging.logtime, 20, "%Y-%m-%d %H:%M:%S", localtime(&timer));
+    sprintf(loging.logtime, "%d-%d-%d %d:%d:%d",
+            localtime(&timer)->tm_year,
+            localtime(&timer)->tm_mon,
+            localtime(&timer)->tm_mday,
+            localtime(&timer)->tm_hour,
+            localtime(&timer)->tm_min,
+            localtime(&timer)->tm_sec);
 }
 
 /*
@@ -169,7 +177,7 @@ static int InitLog(unsigned char loglevel){
     if (strlen(logsetting->filepath) == 0) {
         char *path = getenv("HOME");
         memcpy(logsetting->filepath, path, strlen(path));
-        getdate(strdate);
+        GetDate(strdate);
         strcat(strdate, ".log");
         strcat(logsetting->filepath, "/");
         strcat(logsetting->filepath, strdate);
