@@ -10,10 +10,7 @@ const static char LogLevelText[4][10]={"INFO","DEBUG","WARN","ERROR"};
 
 void GetDate(char *date) {
     time_t timer = time(NULL);
-    sprintf(date, "%d-%d-%d",
-            localtime(&timer)->tm_year,
-            localtime(&timer)->tm_mon,
-            localtime(&timer)->tm_mday);
+    strftime(date, 11, "%Y-%m-%d", localtime(&timer));
 }
 
 unsigned char GetCode(char *path) {
@@ -97,10 +94,7 @@ static LOGSET* GetLogSet() {
 
 static void SetTime() {
     time_t timer = time(NULL);
-    sprintf(loging.logtime, "%d-%d-%d %d:%d:%d",
-            localtime(&timer)->tm_year,
-            localtime(&timer)->tm_mon,
-            localtime(&timer)->tm_mday,
+    sprintf(loging.logtime, "%d:%d:%d",
             localtime(&timer)->tm_hour+8,
             localtime(&timer)->tm_min,
             localtime(&timer)->tm_sec);
