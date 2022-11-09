@@ -99,7 +99,6 @@ static void SetTime() {
             localtime(&timer)->tm_min,
             localtime(&timer)->tm_sec);
 }
-
 /*
  * 不定参打印
  * */

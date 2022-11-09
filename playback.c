@@ -10,12 +10,16 @@ void playback_run(unsigned char *receive_buf, int receive_size) {
     bzero(&replayProtocol, sizeof(ReplayProtocol));
 
     memcpy(&replayProtocol, receive_buf, sizeof(ReplayProtocol));
-/*
+
     unsigned int starttime = replayProtocol.StartTime;
     unsigned int endtime = replayProtocol.EndTime;
     unsigned int commandtype = replayProtocol.CommandType;
     unsigned int speed = replayProtocol.Speed;
-*/
-   // int speed = 5; // default
-    printf("qqqqqqqqqqqqq: %s\n", receive_buf);
+
+    printf("starttime=%d\n", starttime);
+    printf("endtime=%d\n", endtime);
+    printf("commandtype=%d\n", commandtype);
+    printf("speed=%d\n", speed);
+
+
 }
