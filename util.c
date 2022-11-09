@@ -57,6 +57,8 @@ void distribute_server(threadpool_t *thp) {
 	while(1) {
 		struct sockaddr_in caddr = {0};
 		int csize = sizeof(caddr);
+
+        //从这里开始，全局distributeTcpInfo就尽量不要使用了
         distribute_acceptfd = accept(distribute_socketfd, (struct sockaddr*)&caddr, (socklen_t *)&csize);
 		if (EXIT_FAIL_CODE == distribute_acceptfd) {
 			LogWrite(ERROR, "%d %s :%s", __LINE__, "distribute accept failed", strerror(errno));
@@ -65,9 +67,8 @@ void distribute_server(threadpool_t *thp) {
 
         LogWrite(INFO, "%d %s", __LINE__, "distribute connection ok");
 
-        distributeTcpInfo[0].acceptfd = distribute_acceptfd;
 		LogWrite(DEBUG, "%d %s: %d", __LINE__,
-                 "distribute accept fd get", distributeTcpInfo[0].acceptfd);
+                 "distribute accept fd get", distribute_acceptfd);
 
 		LogWrite(INFO, "%d %s%d %s%s", __LINE__,
                  "distribute cport=", ntohs(caddr.sin_port), "distribute caddr=", inet_ntoa(caddr.sin_addr));
@@ -78,7 +79,7 @@ void distribute_server(threadpool_t *thp) {
 		if (pid == EXIT_FAIL_CODE) {
 			LogWrite(ERROR, "%d %s :%s", __LINE__,
                      "distribute fork error", strerror(errno));
-			close(distributeTcpInfo[0].acceptfd);
+			close(distribute_acceptfd);
 			break;
 		}
 
@@ -86,12 +87,12 @@ void distribute_server(threadpool_t *thp) {
 			// child process
 			LogWrite(DEBUG, "%d %s", __LINE__,
                      "distribute-client receive process created");
-			distribute_receive(thp);
+			distribute_receive(thp, distribute_acceptfd);
 		}
 	}
 }
 
-int distribute_client_socket(int index) {
+int distribute_client_socket(int index, int port, char *address) {
 	int socketfd;
 	int res;
 	socketfd = socket(AF_INET, SOCK_STREAM, (int)0);
@@ -113,24 +114,22 @@ int distribute_client_socket(int index) {
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(distributeTcpInfo[index].port);
-	addr.sin_addr.s_addr = inet_addr(distributeTcpInfo[index].address);
+	addr.sin_port = htons(port);
+	addr.sin_addr.s_addr = inet_addr(address);
 
 	res = connect(socketfd,(struct sockaddr*)&addr, sizeof(addr));
 	if(EXIT_FAIL_CODE == res) {
-		LogWrite(ERROR, "%d %s :%s", __LINE__, "master-client connect failed", distributeTcpInfo[index].address);
+		LogWrite(ERROR, "%d %s :%s", __LINE__, "master-client connect failed", address);
         close(socketfd);
 		return EXIT_FAIL_CODE;
 	}
     distributeTcpInfo[index].acceptfd = socketfd;
-	return EXIT_SUCCESS_CODE;
+	return socketfd;
 }
 
-void distribute_receive(threadpool_t *thp) {
-	int distribute_acceptfd;
+void distribute_receive(threadpool_t *thp, int distribute_acceptfd) {
 
 	unsigned char buf[MAX_BUFFER_SIZE] = {0};
-    distribute_acceptfd = distributeTcpInfo[0].acceptfd;
 
     SeaCommunication seaCommunication;
     BDCommunication bdCommunication;
@@ -158,24 +157,23 @@ void distribute_receive(threadpool_t *thp) {
             if (seaCommunication.PacketHead == SEACOMMHEADER ||
                     bdCommunication.PacketHead == BDCOMMHEADER) {
                 // 转发
-                distribute_run(buf, res);
+                distribute_run(buf, res, distribute_acceptfd);
 
             } else if (replayProtocol.PacketHead == PLAYBACKHEADER) {
                 // 回放
-                playback_run(buf, res);
+                playback_run(buf, res, distribute_acceptfd);
             }
 		} else if (res == 0) {
 			break;
 		}
 	}
 	LogWrite(INFO, "%d %s", __LINE__, "distribute all done");
-    distributeTcpInfo[0].acceptfd = 0;
+    //distributeTcpInfo[0].acceptfd = 0;
 	close(distribute_acceptfd);
 }
 
-void distribute_run(unsigned char *receive_buf, int receive_size) {
+void distribute_run(unsigned char *receive_buf, int receive_size, int distribute_acceptfd) {
     FILE *file = {0x0};
-    //unsigned int uuid;
     int client_number = distributeTcpInfo[0].clientNum;
     pthread_t tids[client_number];
     THREAD_PARAM thread_param;
@@ -196,12 +194,6 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
         记录传输数据
     */
     fwrite(receive_buf, sizeof(char), receive_size, file);
-    /*for (int i = 0; i < receive_size; i++) {
-        if (i != 0 && i % 16 == 0) {
-            printf("\n");
-        }
-        printf("%02X ", (unsigned char)(receive_buf[i]));
-    }*/
     fclose(file);
 
     // strncpy在拷贝的时候，即使长度还没到，但是遇到0也会自动截断
@@ -218,8 +210,7 @@ void distribute_run(unsigned char *receive_buf, int receive_size) {
         if (EXIT_FAIL_CODE == ret) {
             LogWrite(ERROR, "%d %s :%s", __LINE__,
                      "distribute-client thread create failed", strerror(errno));
-            close(distributeTcpInfo[i+1].acceptfd);
-            distributeTcpInfo[i+1].acceptfd = 0;
+            close(distribute_acceptfd);
         }
     }
     for (int i = 0; i < client_number; i++) {
@@ -237,32 +228,37 @@ void *distribute_client_send(void *pth_arg) {
     unsigned char *buf = thread_param->buf;
     int index = thread_param->clientIndex;
     int bufSize = thread_param->bufSize;
+    //永远不要信任共享的全局变量!!!!!!!!
+    int port = distributeTcpInfo[index].port;
+    char addressBuf[50];
+    bzero(addressBuf, sizeof addressBuf);
+    strcpy(addressBuf, distributeTcpInfo[index].address);
 
-    int res;
+    int socketfd;
 
     LogWrite(DEBUG, "%d %s", __LINE__, "distribute client socket creating");
-    res = distribute_client_socket(index); // -1 error
-    if (res == EXIT_FAIL_CODE) {
+    socketfd = distribute_client_socket(index, port, addressBuf); // -1 error
+    if (socketfd == EXIT_FAIL_CODE) {
         LogWrite(ERROR, "%d %s :%s:%d", __LINE__,
                  "distribute-client socket failed, only record",
-                 distributeTcpInfo[index].address, distributeTcpInfo[index].port);
-        distributeTcpInfo[index].acceptfd = -1;
+                 addressBuf, port);
     } else {
         LogWrite(DEBUG, "%d %s :%s:%d %d", __LINE__,
                  "distribute-client socket created",
-                 distributeTcpInfo[index].address, distributeTcpInfo[index].port, distributeTcpInfo[index].acceptfd);
+                 addressBuf, port, socketfd);
     }
 
-	LogWrite(DEBUG, "%d %s :%d", __LINE__, "master-client thread created and acceptfd", distributeTcpInfo[index].acceptfd);
+	LogWrite(DEBUG, "%d %s :%d", __LINE__, "master-client thread created and acceptfd", socketfd);
 
-	res = send(distributeTcpInfo[index].acceptfd, buf, bufSize, 0);
+	int res = send(socketfd, buf, bufSize, 0);
 	if (EXIT_FAIL_CODE == res) {
-		LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to", distributeTcpInfo[index].address, strerror(errno), distributeTcpInfo[index].port);
+		LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to",
+                  strerror(errno), addressBuf, port);
 	} else if(res > 0) {
-		LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", distributeTcpInfo[index].address, distributeTcpInfo[index].port);
+		LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", addressBuf, port);
 	}
-    close(distributeTcpInfo[index].acceptfd);
-	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread unlocked by client", thread_param->clientIndex);
+    close(socketfd);
+	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread unlocked by client", index);
 	pthread_mutex_unlock(&mute);
 
 	return pth_arg;

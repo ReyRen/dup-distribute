@@ -7,6 +7,6 @@
 #ifndef DUP_DISTRIBUTE_PLAYBACK_H
 #define DUP_DISTRIBUTE_PLAYBACK_H
 
-void playback_run(unsigned char *receive_buf, int receive_size);
+void playback_run(unsigned char *receive_buf, int receive_size, int distribute_acceptfd);
 
 #endif //DUP_DISTRIBUTE_PLAYBACK_H

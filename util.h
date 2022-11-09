@@ -38,7 +38,7 @@ typedef struct tcpInfo {
 
 void server_start(threadpool_t *thp);
 void distribute_server(threadpool_t *thp);
-void distribute_receive(threadpool_t *thp);
-void distribute_run(unsigned char *receive_buf, int receive_size);
+void distribute_receive(threadpool_t *thp, int distribute_acceptfd);
+void distribute_run(unsigned char *receive_buf, int receive_size, int distribute_acceptfd);
 void *distribute_client_send(void *pth_arg);
 void parseFile_distributeTcpInfo(DISTRIBUTE_TCP_INFO **distributeTcpInfo);
