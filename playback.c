@@ -8,19 +8,18 @@ DISTRIBUTE_TCP_INFO *distributeTcpInfo;
 //
 
 int filter_fn(const struct dirent *ent, char *start, char *end) {
-    if (ent->d_type != DT_REG) {
+    if (ent->d_type == DT_DIR) {
         LogWrite(ERROR, "%d %s", __LINE__,
-                 "scandir get not regular file");
-        return EXIT_FAIL_CODE;
+                 "scandir get dir file, skip");
+        return 0;
     }
-    char delims[] = "_";
-    char *realTime = NULL;
-    realTime = strtok( (char *)ent->d_name, delims );
+    char realTime[10] = {0x0};
+    strncpy(realTime, (char *)ent->d_name, 10);
 
     if (atoi(start) <= atoi(realTime) && atoi(end) >= atoi(realTime)) {
-        return EXIT_SUCCESS_CODE;
+        return 1;
     } else {
-        return EXIT_FAIL_CODE;
+        return 0;
     }
 }
 
@@ -30,6 +29,7 @@ int scanAndSend(char *path, char *starttime,
                     unsigned int speed) {
     int n;
     struct dirent **namelist;
+    char realPath[1024] = {0x0};
 
     n = scandir(path, &namelist, fliter_fn, starttime, endtime, alphasort);
     if (n < 0) {
@@ -37,10 +37,13 @@ int scanAndSend(char *path, char *starttime,
                  "scandir get error");
     } else {
         for (int i = 0; i < n; ++i) {
-            strcat(path, "/");
-            strcat(path, namelist[i]->d_name);
+            strcpy(realPath, path);
+            strcpy(realPath + strlen(path), "/");
+            strcpy(realPath + strlen(path) + 1, namelist[i]->d_name);
+
+            printf("realPath: %s\n", realPath);
             FILE * stream;
-            stream = fopen(path, "r");
+            stream = fopen(realPath, "rb");
             if (stream == NULL) {
                 LogWrite(ERROR, "%d %s", __LINE__,
                          " scanAndSend open file get error");
@@ -129,8 +132,9 @@ void playback_run(unsigned char *receive_buf, int receive_size, int distribute_a
     if (commandtype == PLAYBACK_START) {
         LogWrite(INFO, "%d %s", __LINE__,
                  "playback get START signal");
-       // int res = myscandirServe(starttime, endtime, distribute_acceptfd, speed);
-        int res = myscandirServe(1667991918, 1667992970, distribute_acceptfd, speed);
+        starttime = 1667991918;
+        endtime = 1667992970;
+        int res = myscandirServe(starttime, endtime, distribute_acceptfd, speed);
         if (res == EXIT_SUCCESS_CODE) {
             LogWrite(INFO, "%d %s", __LINE__,
                      "playback get send done");
