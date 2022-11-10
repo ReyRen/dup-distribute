@@ -70,7 +70,6 @@ int scanAndSend(char *path, char *starttime,
 
             free(buffer);
         }
-        close(distribute_client_acceptfd);
     }
 
     return EXIT_SUCCESS_CODE;
@@ -133,12 +132,12 @@ void playback_run(unsigned char *receive_buf, int receive_size, int distribute_c
     if (commandtype == PLAYBACK_START) {
         LogWrite(INFO, "%d %s", __LINE__,
                  "playback get START signal");
-        starttime = 1667991918;
-        endtime = 1667992970;
+        starttime = 1668053662;
+        endtime = 1668053668;
         int res = myscandirServe(starttime, endtime, distribute_client_acceptfd, speed);
         if (res == EXIT_SUCCESS_CODE) {
             LogWrite(INFO, "%d %s", __LINE__,
-                     "playback get send done");
+                     "playback send success");
         } else {
             LogWrite(INFO, "%d %s", __LINE__,
                      "playback send failed");

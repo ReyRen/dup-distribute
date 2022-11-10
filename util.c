@@ -255,6 +255,7 @@ void *distribute_client_send(void *pth_arg) {
                  "distribute-client thread created and acceptfd", socketfd);
         ReplayProtocol replayProtocol;
         bzero(&replayProtocol, sizeof(ReplayProtocol));
+        memcpy(&replayProtocol, buf, sizeof(ReplayProtocol));
         if (replayProtocol.PacketHead == PLAYBACKHEADER){
             playback_run(buf, bufSize, socketfd);
             LogWrite(INFO, "%d %s", __LINE__,
