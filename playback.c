@@ -43,7 +43,7 @@ int scanAndSend(char *path, char *starttime,
             strcpy(realPath + strlen(path), "/");
             strcpy(realPath + strlen(path) + 1, namelist[i]->d_name);
 
-            free(namelist[i]);
+            //free(namelist[i]);
             printf("realPath: %s\n", realPath);
             FILE * stream;
             stream = fopen(realPath, "rb");
@@ -71,6 +71,7 @@ int scanAndSend(char *path, char *starttime,
             }
             free(buffer);
             bzero(realpath, sizeof(realPath));
+            sleep(3);
         }
     }
 
