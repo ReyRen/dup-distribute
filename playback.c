@@ -37,7 +37,6 @@ int scanAndSend(char *path, char *starttime,
     if (n < 0) {
         LogWrite(ERROR, "%d %s", __LINE__,
                  "scandir get error");
-        distributeTcpInfo[index].playbackFlag = 0;
     } else {
         for (int i = 0; i < n; ++i) {
             strcpy(realPath, path);
@@ -117,7 +116,6 @@ int myscandirServe(unsigned int starttime,
     } else {
         LogWrite(INFO, "%d %s", __LINE__,
                  "selected playback day not the today");
-        distributeTcpInfo[index].playbackFlag = 0;
         return EXIT_FAIL_CODE;
     }
 }
