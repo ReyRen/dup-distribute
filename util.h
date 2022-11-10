@@ -20,7 +20,7 @@
 #define MAX_QUEUED_REQUESTS         5
 
 // receive/send buffer
-#define MAX_BUFFER_SIZE             40960
+#define MAX_BUFFER_SIZE             8192000
 
 
 typedef struct thread_param {
