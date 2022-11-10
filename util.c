@@ -158,8 +158,8 @@ void distribute_receive(threadpool_t *thp, int distribute_acceptfd) {
                     bdCommunication.PacketHead == BDCOMMHEADER) {
                 distribute_run(buf, res, distribute_acceptfd, 1);
             } else if (replayProtocol.PacketHead == PLAYBACKHEADER){
-                distribute_run(buf, res, distribute_acceptfd, 0);
                 LogWrite(INFO, "%d %s", __LINE__, "distribute received playback signal, not record");
+                distribute_run(buf, res, distribute_acceptfd, 0);
             } else {
                 LogWrite(INFO, "%d %s", __LINE__, "distribute received useless message, discard");
             }
@@ -200,7 +200,6 @@ void distribute_run(unsigned char *receive_buf,
         fwrite(receive_buf, sizeof(char), receive_size, file);
         fclose(file);
     }
-
     // strncpy在拷贝的时候，即使长度还没到，但是遇到0也会自动截断
     //strncpy(thread_param.buf, buf, sizeof(buf));
     memcpy(thread_param.buf, receive_buf, receive_size);
@@ -257,9 +256,9 @@ void *distribute_client_send(void *pth_arg) {
         bzero(&replayProtocol, sizeof(ReplayProtocol));
         memcpy(&replayProtocol, buf, sizeof(ReplayProtocol));
         if (replayProtocol.PacketHead == PLAYBACKHEADER){
-            playback_run(buf, bufSize, socketfd);
             LogWrite(INFO, "%d %s", __LINE__,
                      "distribute-client accepted, and get playback signal, start execute playback");
+            playback_run(buf, bufSize, socketfd);
         }
         int res = send(socketfd, buf, bufSize, 0);
         if (EXIT_FAIL_CODE == res) {

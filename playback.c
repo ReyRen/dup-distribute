@@ -122,7 +122,7 @@ void playback_run(unsigned char *receive_buf, int receive_size, int distribute_c
     ReplayProtocol replayProtocol;
     bzero(&replayProtocol, sizeof(ReplayProtocol));
 
-    memcpy(&replayProtocol, receive_buf, sizeof(ReplayProtocol));
+    memcpy(&replayProtocol, receive_buf, receive_size);
 
     unsigned int starttime = replayProtocol.StartTime;
     unsigned int endtime = replayProtocol.EndTime;
