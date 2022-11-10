@@ -25,7 +25,7 @@ int filter_fn(const struct dirent *ent, char *start, char *end) {
 
 int scanAndSend(char *path, char *starttime,
                     char *endtime,
-                    int distribute_acceptfd,
+                    int distribute_client_acceptfd,
                     unsigned int speed) {
     int n;
     struct dirent **namelist;
@@ -41,6 +41,7 @@ int scanAndSend(char *path, char *starttime,
             strcpy(realPath + strlen(path), "/");
             strcpy(realPath + strlen(path) + 1, namelist[i]->d_name);
 
+            free(namelist[i]->d_name);
             printf("realPath: %s\n", realPath);
             FILE * stream;
             stream = fopen(realPath, "rb");
@@ -59,17 +60,17 @@ int scanAndSend(char *path, char *starttime,
             fread (buffer,1,lSize, stream);
             fclose(stream);
 
-            int res = send(distribute_acceptfd, buffer, lSize, 0);
+            int res = send(distribute_client_acceptfd, buffer, lSize, 0);
             if (EXIT_FAIL_CODE == res) {
                 LogWrite(ERROR, "%d %s %s :%d", __LINE__, "playback send [FAIL] to fd",
-                         strerror(errno), distribute_acceptfd);
+                         strerror(errno), distribute_client_acceptfd);
             } else if(res > 0) {
-                LogWrite(DEBUG, "%d %s :%d", __LINE__, "playback send [SUCCESS] ", namelist[i]->d_name);
+                LogWrite(DEBUG, "%d %s :%d", __LINE__, "playback send [SUCCESS] ", realPath);
             }
 
             free(buffer);
         }
-        close(distribute_acceptfd);
+        close(distribute_client_acceptfd);
     }
 
     return EXIT_SUCCESS_CODE;
@@ -78,7 +79,7 @@ int scanAndSend(char *path, char *starttime,
 
 int myscandirServe(unsigned int starttime,
                    unsigned int endtime,
-                   int distribute_acceptfd,
+                   int distribute_client_acceptfd,
                    unsigned int speed) {
 
     char start_time_buffer[50];
@@ -109,7 +110,7 @@ int myscandirServe(unsigned int starttime,
     if (access(value, F_OK) == 0) {
         return scanAndSend(value, start_time_buffer,
                                end_time_buffer,
-                               distribute_acceptfd,
+                           distribute_client_acceptfd,
                                speed);
     } else {
         LogWrite(INFO, "%d %s", __LINE__,
@@ -118,7 +119,7 @@ int myscandirServe(unsigned int starttime,
     }
 }
 
-void playback_run(unsigned char *receive_buf, int receive_size, int distribute_acceptfd) {
+void playback_run(unsigned char *receive_buf, int receive_size, int distribute_client_acceptfd) {
     ReplayProtocol replayProtocol;
     bzero(&replayProtocol, sizeof(ReplayProtocol));
 
@@ -134,7 +135,7 @@ void playback_run(unsigned char *receive_buf, int receive_size, int distribute_a
                  "playback get START signal");
         starttime = 1667991918;
         endtime = 1667992970;
-        int res = myscandirServe(starttime, endtime, distribute_acceptfd, speed);
+        int res = myscandirServe(starttime, endtime, distribute_client_acceptfd, speed);
         if (res == EXIT_SUCCESS_CODE) {
             LogWrite(INFO, "%d %s", __LINE__,
                      "playback get send done");
@@ -145,7 +146,7 @@ void playback_run(unsigned char *receive_buf, int receive_size, int distribute_a
     } else if (commandtype == PLAYBACK_END) {
         LogWrite(INFO, "%d %s", __LINE__,
                  "playback get STOP signal, now close connection");
-        close(distribute_acceptfd);
+        close(distribute_client_acceptfd);
     } else {
         LogWrite(ERROR, "%d %s", __LINE__,
                  "Wrong playback signal get");

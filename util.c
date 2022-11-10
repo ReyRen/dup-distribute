@@ -156,12 +156,12 @@ void distribute_receive(threadpool_t *thp, int distribute_acceptfd) {
 
             if (seaCommunication.PacketHead == SEACOMMHEADER ||
                     bdCommunication.PacketHead == BDCOMMHEADER) {
-                // 转发
-                distribute_run(buf, res, distribute_acceptfd);
-
-            } else if (replayProtocol.PacketHead == PLAYBACKHEADER) {
-                // 回放
-                playback_run(buf, res, distribute_acceptfd);
+                distribute_run(buf, res, distribute_acceptfd, 1);
+            } else if (replayProtocol.PacketHead == PLAYBACKHEADER){
+                distribute_run(buf, res, distribute_acceptfd, 0);
+                LogWrite(INFO, "%d %s", __LINE__, "distribute received playback signal, not record");
+            } else {
+                LogWrite(INFO, "%d %s", __LINE__, "distribute received useless message, discard");
             }
 		} else if (res == 0) {
 			break;
@@ -172,7 +172,10 @@ void distribute_receive(threadpool_t *thp, int distribute_acceptfd) {
 	close(distribute_acceptfd);
 }
 
-void distribute_run(unsigned char *receive_buf, int receive_size, int distribute_acceptfd) {
+void distribute_run(unsigned char *receive_buf,
+                    int receive_size,
+                    int distribute_acceptfd,
+                    int recordFD) {
     FILE *file = {0x0};
     int client_number = distributeTcpInfo[0].clientNum;
     pthread_t tids[client_number];
@@ -185,16 +188,18 @@ void distribute_run(unsigned char *receive_buf, int receive_size, int distribute
         16进制数，主要得知道接收的每个16进制数的大小。
         char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
     */
-    file = initDataRecord(file);
-    if (file == NULL) {
-        LogWrite(ERROR, "%d %s:", __LINE__, "distribute initDataRecord failed");
-        return;
+    if (recordFD) {
+        file = initDataRecord(file);
+        if (file == NULL) {
+            LogWrite(ERROR, "%d %s:", __LINE__, "distribute initDataRecord failed");
+            return;
+        }
+        /*
+            记录传输数据
+        */
+        fwrite(receive_buf, sizeof(char), receive_size, file);
+        fclose(file);
     }
-    /*
-        记录传输数据
-    */
-    fwrite(receive_buf, sizeof(char), receive_size, file);
-    fclose(file);
 
     // strncpy在拷贝的时候，即使长度还没到，但是遇到0也会自动截断
     //strncpy(thread_param.buf, buf, sizeof(buf));
@@ -246,18 +251,25 @@ void *distribute_client_send(void *pth_arg) {
         LogWrite(DEBUG, "%d %s :%s:%d %d", __LINE__,
                  "distribute-client socket created",
                  addressBuf, port, socketfd);
+        LogWrite(DEBUG, "%d %s :%d", __LINE__,
+                 "distribute-client thread created and acceptfd", socketfd);
+        ReplayProtocol replayProtocol;
+        bzero(&replayProtocol, sizeof(ReplayProtocol));
+        if (replayProtocol.PacketHead == PLAYBACKHEADER){
+            playback_run(buf, bufSize, socketfd);
+            LogWrite(INFO, "%d %s", __LINE__,
+                     "distribute-client accepted, and get playback signal, start execute playback");
+        }
+        int res = send(socketfd, buf, bufSize, 0);
+        if (EXIT_FAIL_CODE == res) {
+            LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to",
+                     strerror(errno), addressBuf, port);
+        } else if(res > 0) {
+            LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", addressBuf, port);
+        }
+        close(socketfd);
     }
 
-	LogWrite(DEBUG, "%d %s :%d", __LINE__, "master-client thread created and acceptfd", socketfd);
-
-	int res = send(socketfd, buf, bufSize, 0);
-	if (EXIT_FAIL_CODE == res) {
-		LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to",
-                  strerror(errno), addressBuf, port);
-	} else if(res > 0) {
-		LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", addressBuf, port);
-	}
-    close(socketfd);
 	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread unlocked by client", index);
 	pthread_mutex_unlock(&mute);
 
