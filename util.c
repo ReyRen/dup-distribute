@@ -247,6 +247,7 @@ void *distribute_client_send(void *pth_arg) {
                  "distribute-client socket failed, only record",
                  addressBuf, port);
     } else {
+        distributeTcpInfo[index].acceptfd = socketfd;
         LogWrite(DEBUG, "%d %s :%s:%d %d", __LINE__,
                  "distribute-client socket created",
                  addressBuf, port, socketfd);
@@ -256,18 +257,25 @@ void *distribute_client_send(void *pth_arg) {
         bzero(&replayProtocol, sizeof(ReplayProtocol));
         memcpy(&replayProtocol, buf, sizeof(ReplayProtocol));
         if (replayProtocol.PacketHead == PLAYBACKHEADER){
+            distributeTcpInfo[index].playbackFlag = 1;
             LogWrite(INFO, "%d %s", __LINE__,
                      "distribute-client accepted, and get playback signal, start execute playback");
-            playback_run(buf, bufSize, socketfd);
+            playback_run(buf, bufSize, index);
         }
-        int res = send(socketfd, buf, bufSize, 0);
-        if (EXIT_FAIL_CODE == res) {
-            LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to",
-                     strerror(errno), addressBuf, port);
-        } else if(res > 0) {
-            LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", addressBuf, port);
+        int playbackFlag = distributeTcpInfo[index].playbackFlag;
+        if (!playbackFlag) {
+            int res = send(socketfd, buf, bufSize, 0);
+            if (EXIT_FAIL_CODE == res) {
+                LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to",
+                         strerror(errno), addressBuf, port);
+            } else if(res > 0) {
+                LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", addressBuf, port);
+            }
+            close(socketfd);
+        } else {
+            LogWrite(INFO, "%d %s", __LINE__,
+                     "playback mode, not distribute-client, only record!");
         }
-        close(socketfd);
     }
 
 	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread unlocked by client", index);

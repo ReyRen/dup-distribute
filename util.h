@@ -34,6 +34,7 @@ typedef struct tcpInfo {
 	int            		port;
 	int					acceptfd;
 	int					clientNum;
+    int                 playbackFlag;
 }DISTRIBUTE_TCP_INFO;
 
 void server_start(threadpool_t *thp);
