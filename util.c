@@ -263,6 +263,7 @@ void *distribute_client_send(void *pth_arg) {
             playback_run(buf, bufSize, index);
         }
         int playbackFlag = distributeTcpInfo[index].playbackFlag;
+        printf("ppppppppppppppppppppppppppppppppppppppppp: %d\n", playbackFlag);
         if (!playbackFlag) {
             int res = send(socketfd, buf, bufSize, 0);
             if (EXIT_FAIL_CODE == res) {

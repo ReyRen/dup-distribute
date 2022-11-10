@@ -151,7 +151,6 @@ void playback_run(unsigned char *receive_buf, int receive_size, int index) {
     } else {
         LogWrite(ERROR, "%d %s", __LINE__,
                  "Wrong playback signal get");
-        distributeTcpInfo[index].playbackFlag = 0;
     }
 }
 
