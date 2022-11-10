@@ -31,7 +31,7 @@ int scanAndSend(char *path, char *starttime,
     struct dirent **namelist;
     char realPath[1024] = {0x0};
 
-    n = scandir(path, &namelist, fliter_fn, starttime, endtime, alphasort);
+    n = scandir(path, &namelist, filter_fn, starttime, endtime, alphasort);
     if (n < 0) {
         LogWrite(ERROR, "%d %s", __LINE__,
                  "scandir get error");
