@@ -36,8 +36,10 @@ int scanAndSend(char *path, char *starttime,
         LogWrite(ERROR, "%d %s", __LINE__,
                  "scandir get error");
     } else {
+        time_t t = time(NULL);
+        unsigned int playtime = time(&t);
 
-
+        int elapse = 0;
         for (int i = 0; i < n; ++i) {
             strcpy(realPath, path);
             strcpy(realPath + strlen(path), "/");
@@ -62,26 +64,43 @@ int scanAndSend(char *path, char *starttime,
             fread (buffer,1,lSize, stream);
             fclose(stream);
 
-            int res = send(distributeTcpInfo[index].acceptfd, buffer, lSize, 0);
-            if (EXIT_FAIL_CODE == res) {
-                if (errno == EINTR ||errno == EAGAIN ||errno == EWOULDBLOCK) {
-                    LogWrite(ERROR, "%d %s %s :%d", __LINE__,
-                             "playback send [FAIL] to fd, but link is OK, continue",
-                             strerror(errno), distributeTcpInfo[index].acceptfd);
-                } else {
-                    LogWrite(INFO, "%d %s %s :%d", __LINE__,
-                             "playback send [FAIL] to fd, link is bad, exit playback mode",
-                             strerror(errno), distributeTcpInfo[index].acceptfd);
-                    free(buffer);
-                    bzero(realpath, sizeof(realPath));
-                    return EXIT_FAIL_CODE;
+
+            /*
+             * 倍数逻辑
+             * */
+            time_t t_now = time(NULL);
+            unsigned int now = time(&t_now);
+            elapse = now - playtime;
+
+            char fileTime[10] = {0x0};
+            strncpy(fileTime, (char *)namelist[i]->d_name, 10);
+            if ((atoi(fileTime) - atoi(starttime)) > speed * elapse) {
+                int res = send(distributeTcpInfo[index].acceptfd, buffer, lSize, 0);
+                if (EXIT_FAIL_CODE == res) {
+                    if (errno == EINTR ||errno == EAGAIN ||errno == EWOULDBLOCK) {
+                        LogWrite(ERROR, "%d %s %s :%d", __LINE__,
+                                 "playback send [FAIL] to fd, but link is OK, continue",
+                                 strerror(errno), distributeTcpInfo[index].acceptfd);
+                    } else {
+                        LogWrite(INFO, "%d %s %s :%d", __LINE__,
+                                 "playback send [FAIL] to fd, link is bad, exit playback mode",
+                                 strerror(errno), distributeTcpInfo[index].acceptfd);
+                        free(buffer);
+                        memset(realpath, 0, sizeof(realPath));
+                        return EXIT_FAIL_CODE;
+                    }
+                } else if(res > 0) {
+                    LogWrite(DEBUG, "%d %s :%s", __LINE__, "playback send [SUCCESS] ", realPath);
                 }
-            } else if(res > 0) {
-                LogWrite(DEBUG, "%d %s :%s", __LINE__, "playback send [SUCCESS] ", realPath);
+            } else {
+                printf("time overflow: %s\n", fileTime);
+
             }
+            usleep(50);
+
             free(buffer);
-            bzero(realpath, sizeof(realPath));
-            sleep(2);
+            memset(realpath, 0, sizeof(realPath));
+            sleep(1);
         }
     }
 
@@ -138,7 +157,7 @@ void playback_run(unsigned char *receive_buf, int receive_size, int index) {
     strcat(shmFile, distributeTcpInfo[index].address);
 
     ReplayProtocol replayProtocol;
-    bzero(&replayProtocol, sizeof(ReplayProtocol));
+    memset(&replayProtocol, 0, sizeof(ReplayProtocol));
 
     memcpy(&replayProtocol, receive_buf, receive_size);
 
@@ -146,6 +165,11 @@ void playback_run(unsigned char *receive_buf, int receive_size, int index) {
     unsigned int endtime = replayProtocol.EndTime;
     unsigned int commandtype = replayProtocol.CommandType;
     unsigned int speed = replayProtocol.Speed;
+
+    printf("starttime: %d\n", starttime);
+    printf("endtime: %d\n", endtime);
+    printf("commandtype: %d\n", commandtype);
+    printf("speed: %d\n", speed);
 
     if (commandtype == PLAYBACK_START) {
         // 创建共享文件
@@ -157,8 +181,7 @@ void playback_run(unsigned char *receive_buf, int receive_size, int index) {
 
         LogWrite(INFO, "%d %s", __LINE__,
                  "playback get START signal");
-        starttime = 1668146641;
-        endtime = 1668146673;
+
         int res = myscandirServe(starttime, endtime, index, speed);
         if (res == EXIT_SUCCESS_CODE) {
             LogWrite(INFO, "%d %s", __LINE__,
@@ -167,8 +190,8 @@ void playback_run(unsigned char *receive_buf, int receive_size, int index) {
             LogWrite(INFO, "%d %s", __LINE__,
                      "playback send failed");
             if (remove(shmFile)) {
-                LogWrite(ERROR, "%d %s", __LINE__,
-                         "playback shm file remove failed");
+                LogWrite(ERROR, "%d %s: %s", __LINE__,
+                         "playback shm file remove failed", strerror(errno));
                 return;
             } else {
                 LogWrite(DEBUG, "%d %s", __LINE__,

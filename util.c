@@ -152,13 +152,13 @@ void distribute_receive(threadpool_t *thp) {
     SeaCommunication seaCommunication;
     BDCommunication bdCommunication;
     ReplayProtocol replayProtocol;
-    bzero(&seaCommunication, sizeof(SeaCommunication));
-    bzero(&bdCommunication, sizeof(BDCommunication));
-    bzero(&replayProtocol, sizeof(ReplayProtocol));
+    memset(&seaCommunication, 0, sizeof(SeaCommunication));
+    memset(&bdCommunication, 0, sizeof(BDCommunication));
+    memset(&replayProtocol, 0, sizeof(ReplayProtocol));
 
 	while(1) {
 		int receive_size;
-		bzero(&receive_buf, sizeof(receive_buf));
+		memset(&receive_buf, 0, sizeof(receive_buf));
         receive_size = recv(distributeTcpInfo[0].acceptfd, &receive_buf, sizeof(receive_buf), (int)0);
 
 		if (EXIT_FAIL_CODE == receive_size) {
@@ -203,7 +203,7 @@ void distribute_run(unsigned char *receive_buf,
     pthread_t tids[distributeTcpInfo[0].clientNum];
     THREAD_PARAM thread_param;
 
-    bzero(&thread_param, sizeof(THREAD_PARAM));
+    memset(&thread_param, 0, sizeof(THREAD_PARAM));
     /*
      * 直接读buf会碰到0结束的情况
         发送方给的数据就是一个字节的16进制数（0x89这类型），一16进制是4bit，也就是半字节。所以定义接收
@@ -245,7 +245,7 @@ void distribute_run(unsigned char *receive_buf,
     //释放锁
     LogWrite(DEBUG, "%d %s", __LINE__, "distribute-client thread mutex destroy");
     pthread_mutex_destroy(&mute);
-    bzero(&thread_param.buf, sizeof(thread_param.buf));
+    memset(&thread_param.buf, 0, sizeof(thread_param.buf));
 }
 
 void *distribute_client_send(void *pth_arg) {
@@ -270,7 +270,7 @@ void *distribute_client_send(void *pth_arg) {
         LogWrite(DEBUG, "%d %s :%d", __LINE__,
                  "distribute-client thread created and acceptfd", socketfd);
         ReplayProtocol replayProtocol;
-        bzero(&replayProtocol, sizeof(ReplayProtocol));
+        memset(&replayProtocol, 0, sizeof(ReplayProtocol));
         memcpy(&replayProtocol, thread_param->buf, sizeof(ReplayProtocol));
         /*当收到的数据是回放请求头，并且当前client线程地址和请求的地址一样时，执行回放*/
         if (replayProtocol.PacketHead == PLAYBACKHEADER &&
@@ -288,7 +288,7 @@ void *distribute_client_send(void *pth_arg) {
         strcat(shmFile, "./shm/");
         strcat(shmFile, distributeTcpInfo[thread_param->clientIndex].address);
 
-        if (access(shmFile, F_OK) != 0) {
+        if (access(shmFile, F_OK)) {
             // 文件存在，不进行转发
             int res = send(socketfd, thread_param->buf, thread_param->bufSize, 0);
             if (EXIT_FAIL_CODE == res) {

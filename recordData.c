@@ -48,8 +48,7 @@ static void CreateDataFile(char *path) {
     char charValue[512] = {0x0};
 
     //生成UTC时间戳文件
-    time_t t;
-    t = time(NULL);
+    time_t t = time(NULL);
     unsigned int timestamp = time(&t);
     if (uuid > 999) {
         uuid = 0;
