@@ -36,6 +36,8 @@ int scanAndSend(char *path, char *starttime,
         LogWrite(ERROR, "%d %s", __LINE__,
                  "scandir get error");
     } else {
+
+
         for (int i = 0; i < n; ++i) {
             strcpy(realPath, path);
             strcpy(realPath + strlen(path), "/");
@@ -155,8 +157,8 @@ void playback_run(unsigned char *receive_buf, int receive_size, int index) {
 
         LogWrite(INFO, "%d %s", __LINE__,
                  "playback get START signal");
-        starttime = 1668063189;
-        endtime = 1668063901;
+        starttime = 1668146641;
+        endtime = 1668146673;
         int res = myscandirServe(starttime, endtime, index, speed);
         if (res == EXIT_SUCCESS_CODE) {
             LogWrite(INFO, "%d %s", __LINE__,

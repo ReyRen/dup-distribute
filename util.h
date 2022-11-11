@@ -33,7 +33,8 @@ typedef struct thread_param {
 }THREAD_PARAM;
 
 typedef struct tcpInfo {
-	char            	address[INFO_LENGTH];
+	char            	address[INFO_LENGTH]; // self addresses
+	char            	acceptedAddress[INFO_LENGTH];
 	int            		port;
 	int					acceptfd;
 	int					clientNum;

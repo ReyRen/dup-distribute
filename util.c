@@ -64,7 +64,7 @@ void distribute_server(threadpool_t *thp) {
 			LogWrite(ERROR, "%d %s :%s", __LINE__, "distribute accept failed", strerror(errno));
 			_exit(EXIT_FAIL_CODE);
 		}
-
+        strcpy(distributeTcpInfo[0].acceptedAddress, inet_ntoa(caddr.sin_addr));
         distributeTcpInfo[0].acceptfd = distribute_acceptfd;
         LogWrite(INFO, "%d %s", __LINE__, "distribute connection ok");
 
@@ -274,8 +274,8 @@ void *distribute_client_send(void *pth_arg) {
         memcpy(&replayProtocol, thread_param->buf, sizeof(ReplayProtocol));
         /*当收到的数据是回放请求头，并且当前client线程地址和请求的地址一样时，执行回放*/
         if (replayProtocol.PacketHead == PLAYBACKHEADER &&
-                strcmp(distributeTcpInfo[thread_param->clientIndex].address,
-                       distributeTcpInfo[0].address)){
+                !strcmp(distributeTcpInfo[thread_param->clientIndex].address,
+                       distributeTcpInfo[0].acceptedAddress)){
             LogWrite(INFO, "%d %s", __LINE__,
                      "distribute-client accepted, and get playback signal, start execute playback");
             playback_run(thread_param->buf,
