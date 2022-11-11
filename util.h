@@ -22,6 +22,9 @@
 // receive/send buffer
 #define MAX_BUFFER_SIZE             4096000
 
+#define PLAYBACK                    2
+#define DISTRIBUTE                  1
+
 
 typedef struct thread_param {
 	unsigned char		buf[MAX_BUFFER_SIZE];
@@ -34,12 +37,12 @@ typedef struct tcpInfo {
 	int            		port;
 	int					acceptfd;
 	int					clientNum;
-    int                 playbackFlag;
+    int                 flag;
 }DISTRIBUTE_TCP_INFO;
 
 void server_start(threadpool_t *thp);
 void distribute_server(threadpool_t *thp);
-void distribute_receive(threadpool_t *thp, int distribute_acceptfd);
-void distribute_run(unsigned char *receive_buf, int receive_size, int distribute_acceptfd, int recordFD);
+void distribute_receive(threadpool_t *thp);
+void distribute_run(unsigned char *receive_buf, int receive_size);
 void *distribute_client_send(void *pth_arg);
 void parseFile_distributeTcpInfo(DISTRIBUTE_TCP_INFO **distributeTcpInfo);

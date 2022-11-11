@@ -31,8 +31,6 @@ int scanAndSend(char *path, char *starttime,
     struct dirent **namelist;
     char realPath[1024] = {0x0};
 
-    int distribute_client_acceptfd =  distributeTcpInfo[index].acceptfd;
-
     n = scandir(path, &namelist, filter_fn, starttime, endtime, alphasort);
     if (n < 0) {
         LogWrite(ERROR, "%d %s", __LINE__,
@@ -62,16 +60,26 @@ int scanAndSend(char *path, char *starttime,
             fread (buffer,1,lSize, stream);
             fclose(stream);
 
-            int res = send(distribute_client_acceptfd, buffer, lSize, 0);
+            int res = send(distributeTcpInfo[index].acceptfd, buffer, lSize, 0);
             if (EXIT_FAIL_CODE == res) {
-                LogWrite(ERROR, "%d %s %s :%d", __LINE__, "playback send [FAIL] to fd",
-                         strerror(errno), distribute_client_acceptfd);
+                if (errno == EINTR ||errno == EAGAIN ||errno == EWOULDBLOCK) {
+                    LogWrite(ERROR, "%d %s %s :%d", __LINE__,
+                             "playback send [FAIL] to fd, but link is OK, continue",
+                             strerror(errno), distributeTcpInfo[index].acceptfd);
+                } else {
+                    LogWrite(INFO, "%d %s %s :%d", __LINE__,
+                             "playback send [FAIL] to fd, link is bad, exit playback mode",
+                             strerror(errno), distributeTcpInfo[index].acceptfd);
+                    free(buffer);
+                    bzero(realpath, sizeof(realPath));
+                    return EXIT_FAIL_CODE;
+                }
             } else if(res > 0) {
                 LogWrite(DEBUG, "%d %s :%s", __LINE__, "playback send [SUCCESS] ", realPath);
             }
             free(buffer);
             bzero(realpath, sizeof(realPath));
-            sleep(3);
+            sleep(2);
         }
     }
 
@@ -110,10 +118,11 @@ int myscandirServe(unsigned int starttime,
     strcat(value, data); //./data/20221106
 
     if (access(value, F_OK) == 0) {
-        return scanAndSend(value, start_time_buffer,
-                               end_time_buffer,
+        return scanAndSend(value,
+                           start_time_buffer,
+                           end_time_buffer,
                            index,
-                               speed);
+                           speed);
     } else {
         LogWrite(INFO, "%d %s", __LINE__,
                  "selected playback day not the today");
@@ -122,6 +131,10 @@ int myscandirServe(unsigned int starttime,
 }
 
 void playback_run(unsigned char *receive_buf, int receive_size, int index) {
+    char shmFile[128] = {0x0};
+    strcat(shmFile, "./shm/");
+    strcat(shmFile, distributeTcpInfo[index].address);
+
     ReplayProtocol replayProtocol;
     bzero(&replayProtocol, sizeof(ReplayProtocol));
 
@@ -133,6 +146,13 @@ void playback_run(unsigned char *receive_buf, int receive_size, int index) {
     unsigned int speed = replayProtocol.Speed;
 
     if (commandtype == PLAYBACK_START) {
+        // 创建共享文件
+        if (creat(shmFile, 0755) < 0) {
+            LogWrite(ERROR, "%d %s", __LINE__,
+                     "playback shm file create failed");
+            return;
+        }
+
         LogWrite(INFO, "%d %s", __LINE__,
                  "playback get START signal");
         starttime = 1668063189;
@@ -144,14 +164,37 @@ void playback_run(unsigned char *receive_buf, int receive_size, int index) {
         } else {
             LogWrite(INFO, "%d %s", __LINE__,
                      "playback send failed");
+            if (remove(shmFile)) {
+                LogWrite(ERROR, "%d %s", __LINE__,
+                         "playback shm file remove failed");
+                return;
+            } else {
+                LogWrite(DEBUG, "%d %s", __LINE__,
+                         "playback shm file remove success");
+            }
         }
     } else if (commandtype == PLAYBACK_END) {
         LogWrite(INFO, "%d %s", __LINE__,
                  "playback get STOP signal, now close connection");
-        distributeTcpInfo[index].playbackFlag = 0;
+        if (remove(shmFile)) {
+            LogWrite(ERROR, "%d %s", __LINE__,
+                     "playback shm file remove failed");
+            return;
+        } else {
+            LogWrite(DEBUG, "%d %s", __LINE__,
+                     "playback shm file remove success");
+        }
     } else {
         LogWrite(ERROR, "%d %s", __LINE__,
                  "Wrong playback signal get");
+        if (remove(shmFile)) {
+            LogWrite(ERROR, "%d %s", __LINE__,
+                     "playback shm file remove failed");
+            return;
+        } else {
+            LogWrite(DEBUG, "%d %s", __LINE__,
+                     "playback shm file remove success");
+        }
     }
 }
 

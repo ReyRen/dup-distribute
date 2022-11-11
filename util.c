@@ -65,6 +65,7 @@ void distribute_server(threadpool_t *thp) {
 			_exit(EXIT_FAIL_CODE);
 		}
 
+        distributeTcpInfo[0].acceptfd = distribute_acceptfd;
         LogWrite(INFO, "%d %s", __LINE__, "distribute connection ok");
 
 		LogWrite(DEBUG, "%d %s: %d", __LINE__,
@@ -79,7 +80,7 @@ void distribute_server(threadpool_t *thp) {
 		if (pid == EXIT_FAIL_CODE) {
 			LogWrite(ERROR, "%d %s :%s", __LINE__,
                      "distribute fork error", strerror(errno));
-			close(distribute_acceptfd);
+			close(distributeTcpInfo[0].acceptfd);
 			break;
 		}
 
@@ -87,12 +88,14 @@ void distribute_server(threadpool_t *thp) {
 			// child process
 			LogWrite(DEBUG, "%d %s", __LINE__,
                      "distribute-client receive process created");
-			distribute_receive(thp, distribute_acceptfd);
+
+            /*每个进程都有独立的内存空间，所以不用担心distributeTcpInfo[0]被覆盖*/
+			distribute_receive(thp);
 		}
 	}
 }
 
-int distribute_client_socket(int index, int port, char *address) {
+int distribute_client_socket(int index) {
 	int socketfd;
 	int res;
 	socketfd = socket(AF_INET, SOCK_STREAM, (int)0);
@@ -114,12 +117,13 @@ int distribute_client_socket(int index, int port, char *address) {
 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
-	addr.sin_addr.s_addr = inet_addr(address);
+	addr.sin_port = htons(distributeTcpInfo[index].port);
+	addr.sin_addr.s_addr = inet_addr(distributeTcpInfo[index].address);
 
 	res = connect(socketfd,(struct sockaddr*)&addr, sizeof(addr));
 	if(EXIT_FAIL_CODE == res) {
-		LogWrite(ERROR, "%d %s :%s", __LINE__, "master-client connect failed", address);
+		LogWrite(ERROR, "%d %s :%s", __LINE__,
+                 "master-client connect failed", distributeTcpInfo[index].address);
         close(socketfd);
 		return EXIT_FAIL_CODE;
 	}
@@ -127,9 +131,23 @@ int distribute_client_socket(int index, int port, char *address) {
 	return socketfd;
 }
 
-void distribute_receive(threadpool_t *thp, int distribute_acceptfd) {
+/*
+ * accept后的处理进程收到信息先处理一下头
+ * 回放请求：不进行回放请求数据记录
+ *           ->创建多client线程
+ *             ->不同client进行连接创建
+ *               ->不同client线程判断回放请求的地址是不是和自己创建的地址一样
+ *                 ->和自己地址一致的执行playback逻辑
+ *                   ->创建带地址的共享文件让别的进程知道这个client正在进行回放，停止转发
+ *                 ->和自己地址不一致的退出该线程
+ * 海事/北斗：进行转发数据记录
+ *            ->创建多client线程
+ *              ->不同client进行连接创建
+ *              ->不同client进行判断是否有和自己一致的共享文件，如果有则停止这次转发
+ * */
+void distribute_receive(threadpool_t *thp) {
 
-	unsigned char buf[MAX_BUFFER_SIZE] = {0};
+	unsigned char receive_buf[MAX_BUFFER_SIZE] = {0}; // buffer 4M防止粘包处理
 
     SeaCommunication seaCommunication;
     BDCommunication bdCommunication;
@@ -139,46 +157,50 @@ void distribute_receive(threadpool_t *thp, int distribute_acceptfd) {
     bzero(&replayProtocol, sizeof(ReplayProtocol));
 
 	while(1) {
-		int res;
-		bzero(&buf, sizeof(buf));
-		res = recv(distribute_acceptfd, &buf, sizeof(buf), (int)0);
+		int receive_size;
+		bzero(&receive_buf, sizeof(receive_buf));
+        receive_size = recv(distributeTcpInfo[0].acceptfd, &receive_buf, sizeof(receive_buf), (int)0);
 
-		if (EXIT_FAIL_CODE == res) {
-			LogWrite(ERROR, "%d %s :%s", __LINE__, "distribute receive failed", strerror(errno));
+		if (EXIT_FAIL_CODE == receive_size) {
+			LogWrite(ERROR, "%d %s :%s", __LINE__,
+                     "distribute receive failed", strerror(errno));
 			break;
 		}
-        else if (res > 0) {
+        else if (receive_size > 0) {
             LogWrite(INFO, "%d %s", __LINE__, "distribute received message");
 
-            memcpy(&seaCommunication, buf, sizeof(SeaCommunication));
-            memcpy(&bdCommunication, buf, sizeof(BDCommunication));
-            memcpy(&replayProtocol, buf, sizeof(ReplayProtocol));
+            memcpy(&seaCommunication, receive_buf, sizeof(SeaCommunication));
+            memcpy(&bdCommunication, receive_buf, sizeof(BDCommunication));
+            memcpy(&replayProtocol, receive_buf, sizeof(ReplayProtocol));
 
             if (seaCommunication.PacketHead == SEACOMMHEADER ||
                     bdCommunication.PacketHead == BDCOMMHEADER) {
-                distribute_run(buf, res, distribute_acceptfd, 1);
+                distributeTcpInfo[0].flag = DISTRIBUTE;
+                distribute_run(receive_buf, receive_size);
             } else if (replayProtocol.PacketHead == PLAYBACKHEADER){
-                LogWrite(INFO, "%d %s", __LINE__, "distribute received playback signal, not record");
-                distribute_run(buf, res, distribute_acceptfd, 0);
+                LogWrite(INFO, "%d %s", __LINE__,
+                         "distribute received playback signal, not record");
+                distributeTcpInfo[0].flag = PLAYBACK;
+                distribute_run(receive_buf, receive_size);
             } else {
-                LogWrite(INFO, "%d %s", __LINE__, "distribute received useless message, discard");
+                LogWrite(INFO, "%d %s", __LINE__,
+                         "distribute received useless message, discard");
             }
-		} else if (res == 0) {
+		} else if (receive_size == 0) {
 			break;
 		}
 	}
 	LogWrite(INFO, "%d %s", __LINE__, "distribute all done");
-    //distributeTcpInfo[0].acceptfd = 0;
-	close(distribute_acceptfd);
+	close(distributeTcpInfo[0].acceptfd);
 }
 
+/*
+ * 处理文件记录以及创建client线程
+ * */
 void distribute_run(unsigned char *receive_buf,
-                    int receive_size,
-                    int distribute_acceptfd,
-                    int recordFD) {
+                    int receive_size) {
     FILE *file = {0x0};
-    int client_number = distributeTcpInfo[0].clientNum;
-    pthread_t tids[client_number];
+    pthread_t tids[distributeTcpInfo[0].clientNum];
     THREAD_PARAM thread_param;
 
     bzero(&thread_param, sizeof(THREAD_PARAM));
@@ -188,7 +210,7 @@ void distribute_run(unsigned char *receive_buf,
         16进制数，主要得知道接收的每个16进制数的大小。
         char就是一个字节，unsigned char可以将打印出的16进的fff解决（是因为char是有符号的，16进制转换2进制头是1的话就会有fff）
     */
-    if (recordFD) {
+    if (distributeTcpInfo[0].flag == DISTRIBUTE) {
         file = initDataRecord(file);
         if (file == NULL) {
             LogWrite(ERROR, "%d %s:", __LINE__, "distribute initDataRecord failed");
@@ -206,7 +228,7 @@ void distribute_run(unsigned char *receive_buf,
     thread_param.bufSize = receive_size;
     pthread_mutex_init(&mute, NULL);
     LogWrite(DEBUG, "%d %s", __LINE__, "distribute-client thread mutex init");
-    for (int i = 0; i < client_number; i++) {
+    for (int i = 0; i < distributeTcpInfo[0].clientNum; i++) {
         //创建线程锁
         pthread_mutex_lock(&mute);
         thread_param.clientIndex = i + 1;
@@ -214,10 +236,10 @@ void distribute_run(unsigned char *receive_buf,
         if (EXIT_FAIL_CODE == ret) {
             LogWrite(ERROR, "%d %s :%s", __LINE__,
                      "distribute-client thread create failed", strerror(errno));
-            close(distribute_acceptfd);
+            close(distributeTcpInfo[0].acceptfd);
         }
     }
-    for (int i = 0; i < client_number; i++) {
+    for (int i = 0; i < distributeTcpInfo[0].clientNum; i++) {
         pthread_join(tids[i], NULL);
     }
     //释放锁
@@ -228,58 +250,63 @@ void distribute_run(unsigned char *receive_buf,
 
 void *distribute_client_send(void *pth_arg) {
     THREAD_PARAM *thread_param = (THREAD_PARAM *)pth_arg;
-    LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread locked by client", thread_param->clientIndex);
-    unsigned char *buf = thread_param->buf;
-    int index = thread_param->clientIndex;
-    int bufSize = thread_param->bufSize;
-    //永远不要信任共享的全局变量!!!!!!!!
-    int port = distributeTcpInfo[index].port;
-    char addressBuf[50];
-    bzero(addressBuf, sizeof addressBuf);
-    strcpy(addressBuf, distributeTcpInfo[index].address);
+    LogWrite(DEBUG, "%d %s:%d", __LINE__,
+             "thread locked by client", thread_param->clientIndex);
 
     int socketfd;
 
     LogWrite(DEBUG, "%d %s", __LINE__, "distribute client socket creating");
-    socketfd = distribute_client_socket(index, port, addressBuf); // -1 error
+    socketfd = distribute_client_socket(thread_param->clientIndex); // -1 error
     if (socketfd == EXIT_FAIL_CODE) {
         LogWrite(ERROR, "%d %s :%s:%d", __LINE__,
                  "distribute-client socket failed, only record",
-                 addressBuf, port);
+                 distributeTcpInfo[thread_param->clientIndex].address,
+                 distributeTcpInfo[thread_param->clientIndex].port);
     } else {
-        //distributeTcpInfo[index].acceptfd = socketfd;
         LogWrite(DEBUG, "%d %s :%s:%d %d", __LINE__,
                  "distribute-client socket created",
-                 addressBuf, port, socketfd);
+                 distributeTcpInfo[thread_param->clientIndex].address,
+                 distributeTcpInfo[thread_param->clientIndex].port, socketfd);
         LogWrite(DEBUG, "%d %s :%d", __LINE__,
                  "distribute-client thread created and acceptfd", socketfd);
         ReplayProtocol replayProtocol;
         bzero(&replayProtocol, sizeof(ReplayProtocol));
-        memcpy(&replayProtocol, buf, sizeof(ReplayProtocol));
-        if (replayProtocol.PacketHead == PLAYBACKHEADER){
-            distributeTcpInfo[index].playbackFlag = 1;
+        memcpy(&replayProtocol, thread_param->buf, sizeof(ReplayProtocol));
+        /*当收到的数据是回放请求头，并且当前client线程地址和请求的地址一样时，执行回放*/
+        if (replayProtocol.PacketHead == PLAYBACKHEADER &&
+                strcmp(distributeTcpInfo[thread_param->clientIndex].address,
+                       distributeTcpInfo[0].address)){
             LogWrite(INFO, "%d %s", __LINE__,
                      "distribute-client accepted, and get playback signal, start execute playback");
-            playback_run(buf, bufSize, index);
+            playback_run(thread_param->buf,
+                         thread_param->bufSize,
+                         thread_param->clientIndex);
         }
-        int playbackFlag = distributeTcpInfo[index].playbackFlag;
-        printf("ppppppppppppppppppppppppppppppppppppppppp: %d\n", distributeTcpInfo[index].playbackFlag);
-        if (!distributeTcpInfo[index].playbackFlag) {
-            int res = send(socketfd, buf, bufSize, 0);
+
+        /*判断共享文件是否存在*/
+        char shmFile[128] = {0x0};
+        strcat(shmFile, "./shm/");
+        strcat(shmFile, distributeTcpInfo[thread_param->clientIndex].address);
+
+        if (access(shmFile, F_OK) != 0) {
+            // 文件存在，不进行转发
+            int res = send(socketfd, thread_param->buf, thread_param->bufSize, 0);
             if (EXIT_FAIL_CODE == res) {
                 LogWrite(ERROR, "%d %s %s :%s:%d", __LINE__, "send [FAIL] to",
-                         strerror(errno), addressBuf, port);
+                         strerror(errno),
+                         distributeTcpInfo[thread_param->clientIndex].address,
+                         distributeTcpInfo[thread_param->clientIndex].port);
             } else if(res > 0) {
-                LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to", addressBuf, port);
+                LogWrite(DEBUG, "%d %s %s:%d", __LINE__, "send [SUCCESS] to",
+                         distributeTcpInfo[thread_param->clientIndex].address,
+                         distributeTcpInfo[thread_param->clientIndex].port);
             }
-            close(socketfd);
-        } else {
-            LogWrite(INFO, "%d %s", __LINE__,
-                     "playback mode, not distribute-client, only record!");
         }
+        close(socketfd);
     }
 
-	LogWrite(DEBUG, "%d %s:%d", __LINE__, "thread unlocked by client", index);
+	LogWrite(DEBUG, "%d %s:%d", __LINE__,
+             "thread unlocked by client", thread_param->clientIndex);
 	pthread_mutex_unlock(&mute);
 
 	return pth_arg;
@@ -304,7 +331,8 @@ void parseFile_distributeTcpInfo(DISTRIBUTE_TCP_INFO **distributeTcpInfo) {
 
 	LogWrite(INFO, "%d %s :%d", __LINE__, "client number is", clientNum);
 
-    DISTRIBUTE_TCP_INFO *pdistributeTcpInfo = (DISTRIBUTE_TCP_INFO *)malloc(sizeof(DISTRIBUTE_TCP_INFO) * (clientNum + 1));
+    DISTRIBUTE_TCP_INFO *pdistributeTcpInfo =
+            (DISTRIBUTE_TCP_INFO *)malloc(sizeof(DISTRIBUTE_TCP_INFO) * (clientNum + 1));
 	memset(pdistributeTcpInfo, 0, sizeof(DISTRIBUTE_TCP_INFO) * (clientNum + 1));
 
 	//TCP_INFO tcp_info[clientNum + 1];
@@ -313,9 +341,12 @@ void parseFile_distributeTcpInfo(DISTRIBUTE_TCP_INFO **distributeTcpInfo) {
 	master.port = atoi(getInfo_ConfigFile("distribute-port", info, lines));
 	master.clientNum = clientNum;
     pdistributeTcpInfo[0] = master; //存的非指针,所以不存在stack释放引用错误的问题
-	LogWrite(DEBUG, "%d %s :%s", __LINE__, "distribute address is", pdistributeTcpInfo[0].address);
-	LogWrite(DEBUG, "%d %s :%d", __LINE__, "distribute port is", pdistributeTcpInfo[0].port);
-	LogWrite(DEBUG, "%d %s :%d", __LINE__, "distribute connected clients number are", pdistributeTcpInfo[0].clientNum);
+	LogWrite(DEBUG, "%d %s :%s", __LINE__,
+             "distribute address is", pdistributeTcpInfo[0].address);
+	LogWrite(DEBUG, "%d %s :%d", __LINE__,
+             "distribute port is", pdistributeTcpInfo[0].port);
+	LogWrite(DEBUG, "%d %s :%d", __LINE__,
+             "distribute connected clients number are", pdistributeTcpInfo[0].clientNum);
 	for(int i = 1; i <= clientNum; i++) {
 		// create client struct
         DISTRIBUTE_TCP_INFO client = {0x0};

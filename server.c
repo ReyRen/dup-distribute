@@ -1,7 +1,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "util.h"
 #include "ConfigFile.h"
-
+DISTRIBUTE_TCP_INFO *distributeTcpInfo;
 int main(int argc, char ** argv)
 {
 	LogWrite(INFO, "%d %s", __LINE__, "*********Start Server*********");
