@@ -40,7 +40,16 @@ int scanAndSend(char *path, char *starttime,
         unsigned int playtime = time(&t);
 
         int elapse = 0;
-        for (int i = 0; i < n; ++i) {
+        for (int i = 0; i < n;) {
+
+            char shmFile[128] = {0x0};
+            strcat(shmFile, "./shm/");
+            strcat(shmFile, distributeTcpInfo[index].address);
+            if (access(shmFile, F_OK)) {
+                LogWrite(DEBUG, "%d %s", __LINE__, "lock file loss, playback get force end signal");
+                return EXIT_SUCCESS_CODE;
+            }
+
             strcpy(realPath, path);
             strcpy(realPath + strlen(path), "/");
             strcpy(realPath + strlen(path) + 1, namelist[i]->d_name);
@@ -89,11 +98,9 @@ int scanAndSend(char *path, char *starttime,
                         return EXIT_FAIL_CODE;
                     }
                 } else if(res > 0) {
+                    i++;
                     LogWrite(DEBUG, "%d %s :%s", __LINE__, "playback send [SUCCESS] ", realPath);
                 }
-            } else {
-                printf("time overflow: %s\n", fileTime);
-
             }
             usleep(50 * 1000);
 
