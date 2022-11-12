@@ -42,6 +42,7 @@ typedef struct BDCommunication
     UINT16 DataType;
 }BDCommunication;
 
+#pragma pack(push, 1)
 typedef struct replayProtocol
 {
     UINT32 PacketHead;
@@ -50,3 +51,4 @@ typedef struct replayProtocol
     UINT32 EndTime;         // 历史数据的结束时间，精度为秒，返回从1970年1月1日(UTC)开始所经过的秒数
     UINT8  Speed;           // 倍速，最小5倍速，最大60倍速
 }ReplayProtocol;
+#pragma pack(pop)

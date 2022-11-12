@@ -45,7 +45,7 @@ int scanAndSend(char *path, char *starttime,
             strcpy(realPath + strlen(path), "/");
             strcpy(realPath + strlen(path) + 1, namelist[i]->d_name);
 
-            //free(namelist[i]);
+            free(namelist[i]);
             printf("realPath: %s\n", realPath);
             FILE * stream;
             stream = fopen(realPath, "rb");
@@ -64,7 +64,6 @@ int scanAndSend(char *path, char *starttime,
             fread (buffer,1,lSize, stream);
             fclose(stream);
 
-
             /*
              * 倍数逻辑
              * */
@@ -74,7 +73,7 @@ int scanAndSend(char *path, char *starttime,
 
             char fileTime[10] = {0x0};
             strncpy(fileTime, (char *)namelist[i]->d_name, 10);
-            if ((atoi(fileTime) - atoi(starttime)) > speed * elapse) {
+            if ((atoi(fileTime) - atoi(starttime)) < speed * elapse) {
                 int res = send(distributeTcpInfo[index].acceptfd, buffer, lSize, 0);
                 if (EXIT_FAIL_CODE == res) {
                     if (errno == EINTR ||errno == EAGAIN ||errno == EWOULDBLOCK) {
@@ -86,7 +85,7 @@ int scanAndSend(char *path, char *starttime,
                                  "playback send [FAIL] to fd, link is bad, exit playback mode",
                                  strerror(errno), distributeTcpInfo[index].acceptfd);
                         free(buffer);
-                        memset(realpath, 0, sizeof(realPath));
+                        //memset(realpath, 0, sizeof(realPath));
                         return EXIT_FAIL_CODE;
                     }
                 } else if(res > 0) {
@@ -96,11 +95,11 @@ int scanAndSend(char *path, char *starttime,
                 printf("time overflow: %s\n", fileTime);
 
             }
-            usleep(50);
+            usleep(50 * 1000);
 
             free(buffer);
-            memset(realpath, 0, sizeof(realPath));
-            sleep(1);
+            //memset(realpath, 0, sizeof(realPath));
+            //sleep(1);
         }
     }
 
